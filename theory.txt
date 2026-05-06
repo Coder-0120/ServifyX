@@ -1,0 +1,9 @@
+Relationships
+
+User (customer)
+   ↓
+Booking ←→ Service
+   ↓
+User (provider)
+   ↓
+ProviderProfile
