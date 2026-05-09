@@ -26,5 +26,21 @@ const createProviderProfile=async(req,res)=>{
         })
     }
 }
+// now fetching all the providers services to shown to users how many provider are there to shown to users 
 
-module.exports=createProviderProfile;
+const getAllProviders =async(req,res)=>{
+    try{
+        const providers =await ProviderProfile.find().populate("userId","name email role");
+        return res.status(201).json({
+            message:"All providers profile fetched successfully",
+            providers
+        })
+    }
+    catch(error){
+        return res.status(500).json({
+            message:"Internal server error in fetching all providers.."
+        })
+    }
+}
+
+module.exports={createProviderProfile,getAllProviders};
