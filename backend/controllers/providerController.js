@@ -30,7 +30,11 @@ const createProviderProfile=async(req,res)=>{
 
 const getAllProviders =async(req,res)=>{
     try{
-        const providers =await ProviderProfile.find().populate("userId","name email role");
+        const filter={};
+        if(req.query.serviceType){
+            filter.serviceType=req.query.serviceType;
+        }
+        const providers =await ProviderProfile.find(filter).populate("userId","name email role");
         return res.status(201).json({
             message:"All providers profile fetched successfully",
             providers
