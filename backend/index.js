@@ -4,12 +4,15 @@ const connectDb=require("../backend/config/db");
 const dotenv=require("dotenv");
 const authRoutes=require("./routes/authRoutes");
 const providerRoutes=require("./routes/providerRoutes");
+const bookingRoutes=require("./routes/bookingRoutes");
 dotenv.config();
 connectDb();
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/provider", providerRoutes);
+app.use("/api/booking", bookingRoutes);
+
 app.listen(5000,()=>{
     console.log("server is running on port 5000");
 })
