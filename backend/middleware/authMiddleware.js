@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken";
-import User from "../models/User";
+const jwt=require("jsonwebtoken")
+const User=require("../models/User");
 
-export const protect = async (req, res, next) => {
+const protect = async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
@@ -22,3 +22,4 @@ export const protect = async (req, res, next) => {
     res.status(401).json({ message: "No token" });
   }
 };
+module.exports=protect;
