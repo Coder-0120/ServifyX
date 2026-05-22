@@ -32,28 +32,60 @@ const registerUser=async(req,res)=>{
     }
 }
 // to login the user
-const loginUser=async(req,res)=>{
-    try{
-        const{email,password}=req.body;
-        const existUser=await UserModel.findOne({email});
-        if(!existUser){
-            return  res.status(400).json({message:"Invalid credentials.."});
-        }
-        const isMatch = await bcrypt.compare(password, existUser.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-        return res.status(201).json({
-            message:"User login successfully..",
-            token:generateToken(existUser._id),
-            existUser,
-        })
+const loginUser = async (req, res) => {
+  try {
+
+    const { email, password, role } = req.body;
+
+    // CHECK USER
+    const existUser = await UserModel.findOne({ email });
+
+    if (!existUser) {
+      return res.status(400).json({
+        message: "Invalid credentials",
+      });
     }
-    catch(error){
-        return res.status(500).json({
-            message:"Internal server error..",
-            error:error.message
-        })
+
+    // CHECK ROLE
+    if (existUser.role !== role) {
+      return res.status(400).json({
+        message: "Invalid role selected",
+      });
     }
-}
+
+    // CHECK PASSWORD
+    const isMatch = await bcrypt.compare(
+      password,
+      existUser.password
+    );
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid credentials",
+      });
+    }
+
+    // SEND RESPONSE
+    return res.status(200).json({
+      message: "User login successfully",
+
+      token: generateToken(existUser._id),
+
+      user: {
+        _id: existUser._id,
+        name: existUser.name,
+        email: existUser.email,
+        role: existUser.role,
+      },
+    });
+
+  } catch (error) {
+
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+
+  }
+};
 module.exports={registerUser,loginUser};

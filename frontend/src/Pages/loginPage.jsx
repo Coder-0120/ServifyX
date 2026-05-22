@@ -1,6 +1,7 @@
 // LoginPage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
@@ -106,15 +107,69 @@ export default function LoginPage() {
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
-  const handleSubmit = () => {
+ const handleSubmit = async () => {
+  try {
+
     setError("");
-    if (!form.role)                        { setError("Please select your role."); return; }
-    if (!form.email || !form.password)     { setError("Please fill in all fields."); return; }
-    if (!/\S+@\S+\.\S+/.test(form.email)) { setError("Enter a valid email address."); return; }
+
+    if (!form.role) {
+      setError("Please select your role.");
+      return;
+    }
+
+    if (!form.email || !form.password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(form.email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
     setLoading(true);
-    // 🔁 Replace with: axios.post('/api/auth/login', form).then(...)
-    setTimeout(() => { setLoading(false); alert(`Logged in as ${form.role}: ${form.email}`); }, 1400);
-  };
+
+    // API CALL
+    const { data } = await axios.post(
+      "http://localhost:5000/api/auth/login",
+      {
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      }
+    );
+
+    // STORE TOKEN
+    localStorage.setItem("token", data.token);
+
+    // STORE USER
+    localStorage.setItem(
+      "user",
+      JSON.stringify(data.user)
+    );
+
+    // REDIRECT BASED ON ROLE
+    if (data.user.role === "provider") {
+      navigate("/provider/dashboard");
+    } else {
+      navigate("/services");
+    }
+
+  } catch (error) {
+
+    console.log(error);
+
+    setError(
+      error.response?.data?.message ||
+      "Login failed"
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
   return (
     <>

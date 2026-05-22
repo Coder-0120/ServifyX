@@ -6,6 +6,9 @@ const authRoutes=require("./routes/authRoutes");
 const providerRoutes=require("./routes/providerRoutes");
 const bookingRoutes=require("./routes/bookingRoutes");
 const serviceRoutes=require("./routes/serviceRoutes");
+const cors=require("cors");
+
+app.use(cors());
 dotenv.config();
 connectDb();
 app.use(express.json());
