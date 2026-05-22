@@ -146,6 +146,7 @@ export default function LoginPage() {
     localStorage.setItem(
       "user",
       JSON.stringify(data.user)
+
     );
 
     // REDIRECT BASED ON ROLE

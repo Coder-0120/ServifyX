@@ -1,12 +1,11 @@
-// ServicesPage.jsx — fully standalone
-// Fetches all services from GET /api/services and displays them
-
+// ServicesPage.jsx — with BookingModal integrated
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import BookingModal from "./BookServiceModal";          // ← new import
 
-// ── API Base URL — change this to your backend ───────────────────────────────
-const userData=JSON.parse(localStorage.getItem("user")) || null;
+const userData = JSON.parse(localStorage.getItem("user")) || null;
+
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -265,7 +264,6 @@ const CSS = `
   }
 `;
 
-// ── Emoji + color map per service name / category ────────────────────────────
 const SERVICE_META = {
   electrician : { emoji:"⚡", color:"#f59e0b" },
   plumber     : { emoji:"🔧", color:"#3b82f6" },
@@ -281,14 +279,12 @@ function getMeta(name = "") {
   return SERVICE_META[key] || SERVICE_META.default;
 }
 
-// ── SVG Icons ────────────────────────────────────────────────────────────────
 const IconSearch = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"18px",height:"18px",flexShrink:0}}>
     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
 );
 
-// ── Main Component ────────────────────────────────────────────────────────────
 export default function ServicesPage() {
   const navigate = useNavigate();
 
@@ -299,14 +295,15 @@ export default function ServicesPage() {
   const [search, setSearch]       = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
-  // ── Fetch all services ───────────────────────────────────────────────────
+  // ── NEW: modal state ───────────────────────────────────────────────────────
+  const [selectedService, setSelectedService] = useState(null); // holds service + meta
+
   const fetchServices = async () => {
     setLoading(true);
     setError("");
     try {
       const res  = await axios.get("http://localhost:5000/api/service/all");
-      const data = res.data;
-      const list = data.services || [];
+      const list = res.data.services || [];
       setServices(list);
       setFiltered(list);
     } catch (err) {
@@ -318,7 +315,6 @@ export default function ServicesPage() {
 
   useEffect(() => { fetchServices(); }, []);
 
-  // ── Filter by search + category ─────────────────────────────────────────
   useEffect(() => {
     let result = services;
     if (activeCategory !== "All") {
@@ -335,41 +331,54 @@ export default function ServicesPage() {
     setFiltered(result);
   }, [search, activeCategory, services]);
 
-  // ── Unique categories ────────────────────────────────────────────────────
   const categories = ["All", ...new Set(services.map(s => s.category).filter(Boolean))];
+
+  // ── Open modal — guard: must be logged in ─────────────────────────────────
+  const handleBook = (service, emoji, color) => {
+    const user = JSON.parse(localStorage.getItem("user")) || null;
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    setSelectedService({ ...service, emoji, color });
+  };
 
   return (
     <>
       <style>{CSS}</style>
 
+      {/* ── Booking Modal (rendered at root level) ── */}
+      {selectedService && (
+        <BookingModal
+          service={selectedService}
+          onClose={() => setSelectedService(null)}
+          onSuccess={(data) => {
+            // optional: you can do something with data.booking here
+            console.log("Booking created:", data.booking);
+          }}
+        />
+      )}
+
       {/* ── Navbar ── */}
       <nav className="sp-nav">
         <div className="sp-logo" onClick={() => navigate("/")}>ServifyX</div>
-      
-      {userData ? (
-        <>
-        {/* <div className="sp-nav-auth">Welcome, {userData.name}!</div> */}
-        <button className="sp-nav-logout" onClick={() => { localStorage.removeItem("user"); navigate("/login"); }}>Logout</button>
-        </>
-
-      ) : (
-        <div className="sp-nav-auth" style={{display:"flex", gap:".6rem"}}>
-          <button className="sp-nav-ghost" onClick={() => navigate("/login")}>Login</button>
-          <button className="sp-nav-solid" onClick={() => navigate("/register")}>Sign Up</button>
-        </div>
-      )}
+        {userData ? (
+          <button className="sp-nav-logout" onClick={() => { localStorage.removeItem("user"); navigate("/login"); }}>Logout</button>
+        ) : (
+          <div className="sp-nav-auth" style={{display:"flex", gap:".6rem"}}>
+            <button className="sp-nav-ghost" onClick={() => navigate("/login")}>Login</button>
+            <button className="sp-nav-solid" onClick={() => navigate("/register")}>Sign Up</button>
+          </div>
+        )}
       </nav>
 
       {/* ── Hero ── */}
       <section className="sp-hero">
         <div className="sp-hero-grid"/>
-
-        {/* Floating chips */}
         <div className="sp-chip" style={{top:"18%", left:"4%", border:"1px solid #f59e0b40", animation:"floatA 3.8s ease-in-out infinite"}}>⚡ Electrician nearby</div>
         <div className="sp-chip" style={{top:"22%", right:"3%", border:"1px solid #10b98140", animation:"floatB 3.8s ease-in-out .8s infinite"}}>✅ Verified Pros</div>
 
         <div style={{position:"relative", zIndex:1}}>
-          {/* Badge */}
           <div className="sp-badge">
             <span style={{width:"7px",height:"7px",borderRadius:"50%",background:"#10b981",display:"inline-block",animation:"pulse 2s infinite",boxShadow:"0 0 8px #10b98180"}}/>
             15+ SERVICES AVAILABLE
@@ -385,7 +394,6 @@ export default function ServicesPage() {
             Book instantly, track in real time, pay after the job.
           </p>
 
-          {/* Search */}
           <div className="sp-search-wrap">
             <IconSearch/>
             <input
@@ -403,7 +411,6 @@ export default function ServicesPage() {
             <button className="sp-search-btn">Search</button>
           </div>
 
-          {/* Category pills */}
           <div className="sp-filter-wrap">
             {categories.map(cat => (
               <button
@@ -415,9 +422,6 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-
-      {/* ── Stats strip ── */}
-    
 
       {/* ── Services grid ── */}
       <main className="sp-main">
@@ -444,7 +448,6 @@ export default function ServicesPage() {
         </div>
 
         <div className="sp-grid">
-          {/* Loading */}
           {loading && (
             <div className="sp-state-box">
               <div className="sp-spinner"/>
@@ -452,7 +455,6 @@ export default function ServicesPage() {
             </div>
           )}
 
-          {/* Error */}
           {!loading && error && (
             <div className="sp-state-box">
               <div style={{fontSize:"2.5rem"}}>⚠️</div>
@@ -461,7 +463,6 @@ export default function ServicesPage() {
             </div>
           )}
 
-          {/* Empty */}
           {!loading && !error && filtered.length === 0 && (
             <div className="sp-state-box">
               <div style={{fontSize:"2.8rem"}}>🔍</div>
@@ -471,7 +472,6 @@ export default function ServicesPage() {
             </div>
           )}
 
-          {/* Cards */}
           {!loading && !error && filtered.map((service, i) => {
             const { emoji, color } = getMeta(service.name);
             return (
@@ -481,7 +481,7 @@ export default function ServicesPage() {
                 emoji={emoji}
                 color={color}
                 delay={`${i * 0.06}s`}
-                onBook={() => navigate(`/book/${service._id}`)}
+                onBook={() => handleBook(service, emoji, color)}   // ← changed
               />
             );
           })}
@@ -491,7 +491,7 @@ export default function ServicesPage() {
   );
 }
 
-// ── Service Card ─────────────────────────────────────────────────────────────
+// ── Service Card (unchanged) ──────────────────────────────────────────────────
 function ServiceCard({ service, emoji, color, delay, onBook }) {
   const [hovered, setHovered] = useState(false);
 
@@ -506,35 +506,24 @@ function ServiceCard({ service, emoji, color, delay, onBook }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Top accent bar */}
       <div className="sp-card-bar" style={{background:`linear-gradient(90deg,${color},${color}55)`}}/>
-
-      {/* Shine on hover */}
       <div className="sp-card-shine"/>
-
-      {/* Corner glow */}
       <div style={{position:"absolute",top:"-30px",right:"-30px",width:"100px",height:"100px",borderRadius:"50%",background:`radial-gradient(circle,${color}12,transparent 70%)`}}/>
 
       <div style={{position:"relative",zIndex:1}}>
-        {/* Icon */}
         <div className="sp-card-icon" style={{background:`${color}15`, border:`1px solid ${color}28`}}>
           {emoji}
         </div>
 
-        {/* Category badge */}
         {service.category && (
           <div className="sp-card-category">{service.category}</div>
         )}
 
-        {/* Name */}
         <div className="sp-card-name">{service.name}</div>
-
-        {/* Description */}
         <div className="sp-card-desc">
           {service.description || "Professional service delivered by verified experts."}
         </div>
 
-        {/* Footer */}
         <div className="sp-card-footer">
           <div>
             <div className="sp-card-price" style={{color}}>

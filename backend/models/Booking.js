@@ -14,6 +14,8 @@ const bookingSchema=new mongoose.Schema({
         ref:"Service",
         required:true,
     },
+    address:String,
+    note:String,
     status:{
         type:String,
         enum: [

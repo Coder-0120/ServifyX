@@ -7,7 +7,7 @@ const ProviderProfile = require("../models/ProviderProfile");
 const createBooking = async (req, res) => {
   try {
 
-    const { serviceId, scheduledTime } = req.body;
+    const { serviceId, scheduledTime, address, note } = req.body;
 
     // validate service
     const service = await Service.findById(serviceId);
@@ -25,6 +25,8 @@ const createBooking = async (req, res) => {
       scheduledTime,
       status: "requested",
       paymentStatus: "pending",
+      address: address.trim() || undefined,
+      note: note.trim() || undefined,
     });
 
     // find matching providers
