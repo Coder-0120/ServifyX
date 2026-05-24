@@ -243,7 +243,6 @@ function formatDateTime(iso) {
   });
 }
 
-// ── BookingModal Component ───────────────────────────────────────────────────
 export default function BookServiceModal({ service, onClose, onSuccess }) {
   const [scheduledTime, setScheduledTime] = useState("");
   const [address, setAddress]             = useState("");
