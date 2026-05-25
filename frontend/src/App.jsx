@@ -4,6 +4,7 @@ import LandingPage from './Pages/LandingPage'
 import LoginPage from './Pages/LoginPage'
 import RegisterPage from './Pages/RegisterPage'  
 import ServicesPage from './Pages/servicesPage'
+import ProviderDashboard from './Pages/ProviderDashboard'
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
       <Route path="/login" element={<LoginPage />} /> 
       <Route path="/register" element={<RegisterPage />} /> 
       <Route path="/services" element={<ServicesPage />} />
+      <Route path="/provider/dashboard" element={<ProviderDashboard />} />
 
       </Routes>
     </Router>

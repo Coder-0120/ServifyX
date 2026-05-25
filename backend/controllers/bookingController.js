@@ -133,21 +133,54 @@ const updateBookingStatus = async (req, res) => {
 
 const getMyBookings = async (req, res) => {
   try {
+    let bookings;
 
-    const bookings = await Booking.find({
-      userId: req.user._id,
-    })
-      .populate("providerId", "name email")
-      .populate("serviceId");
+    if (req.user.role === "provider") {
+      const providerProfile = await ProviderProfile.findOne({
+        userId: req.user._id,
+      });
+
+      if (!providerProfile || !providerProfile.serviceType) {
+        return res.status(200).json([]);
+      }
+
+      const service = await Service.findOne({
+        name: { $regex: `^${providerProfile.serviceType}$`, $options: "i" },
+      });
+
+      if (!service) {
+        return res.status(200).json([]);
+      }
+
+      bookings = await Booking.find({
+        $or: [
+          {
+            status: "requested",
+            serviceId: service._id,
+          },
+          {
+            providerId: req.user._id,
+          },
+        ],
+      })
+        .populate("providerId", "name email")
+        .populate("serviceId");
+    } else {
+      bookings = await Booking.find({
+        userId: req.user._id,
+      })
+        .populate("providerId", "name email")
+        .populate("serviceId");
+    }
 
     res.status(200).json(bookings);
-
   } catch (error) {
     res.status(500).json({
       message: error.message,
     });
   }
 };
+
 module.exports = {
   createBooking,
   acceptBooking,
