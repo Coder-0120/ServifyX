@@ -176,7 +176,7 @@ export default function RegisterPage() {
     // REDIRECT BASED ON ROLE
     if (data.user.role === "provider") {
 
-      navigate("/provider/dashboard");
+      navigate("/create-provider-profile");
 
     } else {
 

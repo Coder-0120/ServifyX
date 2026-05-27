@@ -55,15 +55,27 @@ const ProviderDashboard = () => {
 
   useEffect(() => {
 
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    fetchBookings();
-
+    const checkProviderProfile = async () => {
+      try {
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+        await axios.get(
+          "http://localhost:5000/api/provider/my-profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        fetchBookings();
+      } catch (error) {
+        navigate("/create-provider-profile");
+      }
+    };
+    checkProviderProfile();
   }, []);
-
   // ACCEPT BOOKING
   const acceptBooking = async (bookingId) => {
 
@@ -246,8 +258,8 @@ const ProviderDashboard = () => {
                         📅 {
                           booking?.scheduledTime
                             ? new Date(
-                                booking.scheduledTime
-                              ).toLocaleString()
+                              booking.scheduledTime
+                            ).toLocaleString()
                             : "No date"
                         }
                       </p>

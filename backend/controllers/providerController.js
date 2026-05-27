@@ -47,4 +47,30 @@ const getAllProviders =async(req,res)=>{
     }
 }
 
-module.exports={createProviderProfile,getAllProviders};
+const getMyProviderProfile = async (req,res) => {
+  try {
+    const profile =
+      await ProviderProfile.findOne({
+        userId: req.user._id,
+      });
+
+    if (!profile) {
+
+      return res.status(404).json({
+        message: "Profile not found",
+      });
+
+    }
+
+    res.status(200).json(profile);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message,
+    });
+
+  }
+};
+
+module.exports={createProviderProfile,getAllProviders,getMyProviderProfile};
