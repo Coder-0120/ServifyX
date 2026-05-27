@@ -403,6 +403,14 @@ export default function ProviderDashboard() {
                     {booking.paymentStatus || "pending"}
                   </span>
                 </div>
+                <div className="pd-info-row">
+                  <span>📍</span>
+                  <span>{booking?.address || "Not provided"}</span>
+                </div>
+                <div className="pd-info-row">
+                  <span>📝</span>
+                  <span>{booking?.note || "No notes"}</span>
+                </div>
 
                 {/* Accept button */}
                 {booking.status === "requested" && (

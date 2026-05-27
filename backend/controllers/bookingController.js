@@ -164,7 +164,7 @@ const getMyBookings = async (req, res) => {
         ],
       })
         .populate("providerId", "name email")
-        .populate("serviceId");
+        .populate("serviceId").sort({ createdAt: -1 });
     } else {
       bookings = await Booking.find({
         userId: req.user._id,
