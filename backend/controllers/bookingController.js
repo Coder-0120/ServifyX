@@ -49,6 +49,7 @@ const createBooking = async (req, res) => {
     });
   }
 };
+
 // accept the booking 
 const acceptBooking = async (req, res) => {
   try {
@@ -83,6 +84,48 @@ const acceptBooking = async (req, res) => {
 
     res.status(200).json({
       message: "Booking accepted successfully",
+      booking,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+// cancel the booking 
+const cancelBooking = async (req, res) => {
+  try {
+
+    // user check
+    if (req.user.role !== "user") {
+      return res.status(403).json({
+        message: "Only users can cancel bookings",
+      });
+    }
+
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found",
+      });
+    }
+
+    // prevent multiple cancellation
+    if (booking.status === "cancelled") {
+      return res.status(400).json({
+        message: "Booking already cancelled",
+      });
+    }
+
+    booking.status = "cancelled";
+
+    await booking.save();
+
+    res.status(200).json({
+      message: "Booking cancelled successfully",
       booking,
     });
 
@@ -187,4 +230,5 @@ module.exports = {
   acceptBooking,
   updateBookingStatus,
   getMyBookings,
+  cancelBooking,
 };

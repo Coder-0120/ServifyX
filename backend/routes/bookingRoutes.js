@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   createBooking,
   acceptBooking,
+  cancelBooking,  
   updateBookingStatus,
   getMyBookings,
 } = require("../controllers/bookingController");
@@ -17,6 +18,9 @@ router.post("/create", protect, createBooking);
 
 // ACCEPT BOOKING
 router.patch("/accept/:id", protect, acceptBooking);
+
+// CANCEL BOOKING
+router.patch("/cancel/:id", protect, cancelBooking);
 
 // UPDATE STATUS
 router.patch("/status/:id", protect, updateBookingStatus);
