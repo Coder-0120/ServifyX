@@ -54,7 +54,7 @@ const TIMELINE_STEPS = [
   { key: "completed",   label: "Completed",   emoji: "🏆" },
 ];
 
-const STEP_ORDER = ["requested", "accepted", "in-progress", "completed"];
+const STEP_ORDER = ["requested", "accepted", "in_progress", "completed"];
 
 const getStepIndex = (status) => STEP_ORDER.indexOf(status);
 

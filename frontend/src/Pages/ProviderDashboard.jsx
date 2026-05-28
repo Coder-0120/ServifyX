@@ -149,7 +149,7 @@ const CSS = `
     font-size: .75rem; font-weight: 700; letter-spacing: .03em;
   }
 
-  /* ── Accept button ── */
+  /* ── Action buttons ── */
   .pd-accept-btn {
     width: 100%; margin-top: 1.1rem; padding: .75rem; border-radius: 12px; border: none;
     background: linear-gradient(135deg,#10b981,#06b6d4); color: #fff;
@@ -165,6 +165,38 @@ const CSS = `
   .pd-accept-btn:hover::after { animation: shimmer .65s ease forwards; }
   .pd-accept-btn:active  { transform: translateY(0); }
   .pd-accept-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+  .pd-progress-btn {
+    width: 100%; margin-top: 1.1rem; padding: .75rem; border-radius: 12px; border: none;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff;
+    font-size: .9rem; font-weight: 700; font-family: 'Poppins',sans-serif;
+    cursor: pointer; position: relative; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(99,102,241,.35); transition: transform .25s, box-shadow .25s;
+  }
+  .pd-progress-btn::after {
+    content:''; position:absolute; top:0; left:-100%; width:60%; height:100%;
+    background: linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  }
+  .pd-progress-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,102,241,.5); }
+  .pd-progress-btn:hover::after { animation: shimmer .65s ease forwards; }
+  .pd-progress-btn:active  { transform: translateY(0); }
+  .pd-progress-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+  .pd-complete-btn {
+    width: 100%; margin-top: .65rem; padding: .75rem; border-radius: 12px; border: none;
+    background: linear-gradient(135deg,#f59e0b,#f97316); color: #fff;
+    font-size: .9rem; font-weight: 700; font-family: 'Poppins',sans-serif;
+    cursor: pointer; position: relative; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(245,158,11,.35); transition: transform .25s, box-shadow .25s;
+  }
+  .pd-complete-btn::after {
+    content:''; position:absolute; top:0; left:-100%; width:60%; height:100%;
+    background: linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  }
+  .pd-complete-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(245,158,11,.5); }
+  .pd-complete-btn:hover::after { animation: shimmer .65s ease forwards; }
+  .pd-complete-btn:active  { transform: translateY(0); }
+  .pd-complete-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
   /* ── States ── */
   .pd-state {
@@ -238,7 +270,7 @@ const getMeta   = (name = "") => SERVICE_META[(name || "").toLowerCase()] || SER
 const STATUS_STYLE = {
   requested  : { color:"#f59e0b", bg:"rgba(245,158,11,.1)",  border:"rgba(245,158,11,.25)",  dot:"#f59e0b", label:"Requested"   },
   accepted   : { color:"#10b981", bg:"rgba(16,185,129,.1)",  border:"rgba(16,185,129,.25)",  dot:"#10b981", label:"Accepted"    },
-  inprogress : { color:"#6366f1", bg:"rgba(99,102,241,.1)",  border:"rgba(99,102,241,.25)",  dot:"#6366f1", label:"In Progress" },
+  in_progress : { color:"#6366f1", bg:"rgba(99,102,241,.1)",  border:"rgba(99,102,241,.25)",  dot:"#6366f1", label:"In Progress" },
   completed  : { color:"#06b6d4", bg:"rgba(6,182,212,.1)",   border:"rgba(6,182,212,.25)",   dot:"#06b6d4", label:"Completed"   },
 };
 const getStatus = (s = "") =>
@@ -255,6 +287,7 @@ export default function ProviderDashboard() {
   const [bookings,     setBookings]     = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [accepting,    setAccepting]    = useState(null);
+  const [updating,     setUpdating]     = useState(null); // tracks in-progress/complete status updates
   const [activeFilter, setActiveFilter] = useState("all");
 
   const user = (() => {
@@ -311,38 +344,65 @@ export default function ProviderDashboard() {
     }
   };
 
-  // ── Logout — clears storage AND fires auth-changed so LandingPage ───────
-  // navbar updates instantly without a reload.
+  // ── Update booking status (in-progress / completed) ────────────────────
+  const updateStatus = async (bookingId, status) => {
+    setUpdating(bookingId + status);
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/booking/status/${bookingId}`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchBookings();
+    } catch (err) {
+      alert(err.response?.data?.message || `Failed to update status to ${status}`);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  // ── Logout ───────────────────────────────────────────────────────────────
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    window.dispatchEvent(new Event("auth-changed")); // ← LandingPage listens to this
+    window.dispatchEvent(new Event("auth-changed"));
     navigate("/login");
   };
 
   // ── Derived stats ─────────────────────────────────────────────────────────
-  const total     = bookings.length;
-  const pending   = bookings.filter(b => b.status === "requested").length;
-  const accepted  = bookings.filter(b => b.status === "accepted").length;
-  const completed = bookings.filter(b => b.status === "completed").length;
+  const total      = bookings.length;
+  const pending    = bookings.filter(b => b.status === "requested").length;
+  const accepted   = bookings.filter(b => b.status === "accepted").length;
+  const inprogress = bookings.filter(b => b.status === "in_progress").length;
+  const completed  = bookings.filter(b => b.status === "completed").length;
 
   const STATS = [
-    { emoji:"📋", num:total,     label:"Total Requests", color:"#6366f1", delay:".05s" },
-    { emoji:"⏳", num:pending,   label:"Pending",        color:"#f59e0b", delay:".1s"  },
-    { emoji:"✅", num:accepted,  label:"Accepted",       color:"#10b981", delay:".15s" },
-    { emoji:"🏆", num:completed, label:"Completed",      color:"#06b6d4", delay:".2s"  },
+    { emoji:"📋", num:total,      label:"Total Requests", color:"#6366f1", delay:".05s" },
+    { emoji:"⏳", num:pending,    label:"Pending",        color:"#f59e0b", delay:".1s"  },
+    { emoji:"✅", num:accepted,   label:"Accepted",       color:"#10b981", delay:".15s" },
+    { emoji:"🔨", num:inprogress, label:"In Progress",    color:"#8b5cf6", delay:".18s" },
+    { emoji:"🏆", num:completed,  label:"Completed",      color:"#06b6d4", delay:".2s"  },
   ];
 
   const FILTER_TABS = [
-    { key:"all",       label:"All",       color:"#6366f1", count: total     },
-    { key:"requested", label:"Requested", color:"#f59e0b", count: pending   },
-    { key:"accepted",  label:"Accepted",  color:"#10b981", count: accepted  },
-    { key:"completed", label:"Completed", color:"#06b6d4", count: completed },
+    { key:"all",        label:"All",         color:"#6366f1", count: total      },
+    { key:"requested",  label:"Requested",   color:"#f59e0b", count: pending    },
+    { key:"accepted",   label:"Accepted",    color:"#10b981", count: accepted   },
+    { key:"inprogress", label:"In Progress", color:"#8b5cf6", count: inprogress },
+    { key:"completed",  label:"Completed",   color:"#06b6d4", count: completed  },
   ];
 
   const visibleBookings = activeFilter === "all"
     ? bookings
     : bookings.filter(b => b.status === activeFilter);
+
+  // ── Spinner snippet helper ─────────────────────────────────────────────
+  const BtnSpinner = ({ label }) => (
+    <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:".5rem" }}>
+      <span style={{ width:"16px", height:"16px", border:"2px solid rgba(255,255,255,.3)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin .8s linear infinite" }}/>
+      {label}
+    </span>
+  );
 
   return (
     <>
@@ -520,26 +580,52 @@ export default function ProviderDashboard() {
                   </div>
                 </div>
 
-                {/* Accept */}
+                {/* ── Action buttons based on status ── */}
+
                 {booking.status === "requested" && (
                   <button
                     className="pd-accept-btn"
                     onClick={() => acceptBooking(booking._id)}
                     disabled={accepting === booking._id}
                   >
-                    {accepting === booking._id ? (
-                      <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:".5rem" }}>
-                        <span style={{ width:"16px", height:"16px", border:"2px solid rgba(255,255,255,.3)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin .8s linear infinite" }}/>
-                        Accepting…
-                      </span>
-                    ) : "✓ Accept Booking"}
+                    {accepting === booking._id
+                      ? <BtnSpinner label="Accepting…" />
+                      : "✓ Accept Booking"}
                   </button>
                 )}
 
                 {booking.status === "accepted" && (
-                  <div style={{ marginTop:"1rem", padding:".65rem 1rem", borderRadius:"10px", background:"rgba(16,185,129,.07)", border:"1px solid rgba(16,185,129,.22)", fontSize:".82rem", color:"#6ee7b7", fontWeight:600, textAlign:"center" }}>
-                    ✅ Booking Accepted — Arrive on time!
-                  </div>
+                  <>
+                    <div style={{ marginTop:"1rem", padding:".65rem 1rem", borderRadius:"10px", background:"rgba(16,185,129,.07)", border:"1px solid rgba(16,185,129,.22)", fontSize:".82rem", color:"#6ee7b7", fontWeight:600, textAlign:"center" }}>
+                      ✅ Booking Accepted — Arrive on time!
+                    </div>
+                    <button
+                      className="pd-progress-btn"
+                      onClick={() => updateStatus(booking._id, "in_progress")}
+                      disabled={updating === booking._id + "in_progress"}
+                    >
+                      {updating === booking._id + "in_progress"
+                        ? <BtnSpinner label="Updating…" />
+                        : "🔨 Mark as In Progress"}
+                    </button>
+                  </>
+                )}
+
+                {booking.status === "in_progress" && (
+                  <>
+                    <div style={{ marginTop:"1rem", padding:".65rem 1rem", borderRadius:"10px", background:"rgba(99,102,241,.07)", border:"1px solid rgba(99,102,241,.25)", fontSize:".82rem", color:"#a5b4fc", fontWeight:600, textAlign:"center" }}>
+                      🔨 Work In Progress…
+                    </div>
+                    <button
+                      className="pd-complete-btn"
+                      onClick={() => updateStatus(booking._id, "completed")}
+                      disabled={updating === booking._id + "completed"}
+                    >
+                      {updating === booking._id + "completed"
+                        ? <BtnSpinner label="Completing…" />
+                        : "🏆 Mark as Completed"}
+                    </button>
+                  </>
                 )}
 
                 {booking.status === "completed" && (

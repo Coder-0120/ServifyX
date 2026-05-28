@@ -22,7 +22,7 @@ const GLOBAL_CSS = `
 const STATUS_META = {
   requested:   { color: "#f59e0b", bg: "rgba(245,158,11,.1)", border: "rgba(245,158,11,.25)", icon: "🕐", label: "Requested" },
   accepted:    { color: "#06b6d4", bg: "rgba(6,182,212,.1)", border: "rgba(6,182,212,.25)", icon: "✅", label: "Accepted" },
-  "in-progress": { color: "#8b5cf6", bg: "rgba(139,92,246,.1)", border: "rgba(139,92,246,.25)", icon: "⚙️", label: "In Progress" },
+  in_progress: { color: "#8b5cf6", bg: "rgba(139,92,246,.1)", border: "rgba(139,92,246,.25)", icon: "⚙️", label: "In Progress" },
   completed:   { color: "#10b981", bg: "rgba(16,185,129,.1)", border: "rgba(16,185,129,.25)", icon: "🏆", label: "Completed" },
   cancelled:   { color: "#ef4444", bg: "rgba(239,68,68,.1)", border: "rgba(239,68,68,.25)", icon: "✖️", label: "Cancelled" },
 };
@@ -30,10 +30,10 @@ const STATUS_META = {
 const TIMELINE_STEPS = [
   { key: "requested", label: "Requested", emoji: "📋" },
   { key: "accepted", label: "Accepted", emoji: "✅" },
-  { key: "in-progress", label: "In Progress", emoji: "⚙️" },
+  { key: "in_progress", label: "In Progress", emoji: "⚙️" },
   { key: "completed", label: "Completed", emoji: "🏆" },
 ];
-const STEP_ORDER = ["requested", "accepted", "in-progress", "completed"];
+const STEP_ORDER = ["requested", "accepted", "in_progress", "completed"];
 const getStepIndex = (status) => STEP_ORDER.indexOf(status);
 
 function SkeletonCard() {
@@ -232,7 +232,7 @@ function TrackProviderBookings() {
     total: bookings.length,
     pending: bookings.filter((b) => b.status === "requested").length,
     accepted: bookings.filter((b) => b.status === "accepted").length,
-    inProgress: bookings.filter((b) => b.status === "in-progress").length,
+    inProgress: bookings.filter((b) => b.status === "in_progress").length,
     completed: bookings.filter((b) => b.status === "completed").length,
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
   };
