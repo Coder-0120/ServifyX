@@ -1,4 +1,7 @@
-// ProviderDashboard.jsx — restyled to match ServifyX theme
+// ProviderDashboard.jsx — ServifyX theme
+// Fires window "auth-changed" event on logout so LandingPage navbar
+// updates instantly without a page reload.
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -8,12 +11,11 @@ const CSS = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Poppins', sans-serif; background: #0f172a; color: #e2e8f0; overflow-x: hidden; }
 
-  @keyframes fadeUp  { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes pulse   { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(.88)} }
-  @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-  @keyframes shimmer { 0%{left:-100%} 100%{left:110%} }
-  @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-  @keyframes cardIn  { from{opacity:0;transform:translateY(20px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+  @keyframes fadeUp    { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse     { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(.88)} }
+  @keyframes spin      { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes shimmer   { 0%{left:-100%} 100%{left:110%} }
+  @keyframes cardIn    { from{opacity:0;transform:translateY(20px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
 
   /* ── Navbar ── */
   .pd-nav {
@@ -37,16 +39,18 @@ const CSS = `
     color: #c7d2fe; font-size: .84rem; font-weight: 600;
   }
   .pd-logout {
-    padding: .42rem 1.1rem; border-radius: 10px; border: 1.5px solid rgba(239,68,68,.35);
+    padding: .42rem 1.1rem; border-radius: 10px;
+    border: 1.5px solid rgba(239,68,68,.35);
     background: rgba(239,68,68,.08); color: #fca5a5;
-    font-size: .84rem; font-weight: 600; cursor: pointer; font-family: 'Poppins',sans-serif;
-    transition: all .2s;
+    font-size: .84rem; font-weight: 600; cursor: pointer;
+    font-family: 'Poppins',sans-serif; transition: all .2s;
   }
   .pd-logout:hover { background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.55); }
 
   /* ── Hero ── */
   .pd-hero {
-    padding: 3rem 2rem 2rem; text-align: center; position: relative; overflow: hidden;
+    padding: 3rem 2rem 2rem; text-align: center;
+    position: relative; overflow: hidden;
     background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,.15) 0%, transparent 65%);
   }
   .pd-hero-grid {
@@ -85,7 +89,7 @@ const CSS = `
     animation: fadeUp .5s ease both;
     transition: transform .3s, box-shadow .3s, border-color .3s;
   }
-  .pd-stat:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(99,102,241,.12); border-color: rgba(99,102,241,.3); }
+  .pd-stat:hover { transform: translateY(-3px); }
   .pd-stat-icon {
     width: 48px; height: 48px; border-radius: 13px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
@@ -102,7 +106,7 @@ const CSS = `
   .pd-section-title { font-size: 1.25rem; font-weight: 800; color: #f1f5f9; letter-spacing: -.02em; }
   .pd-section-count { font-size: .82rem; color: #64748b; font-weight: 500; }
 
-  /* ── Refresh button ── */
+  /* ── Refresh ── */
   .pd-refresh {
     padding: .4rem 1rem; border-radius: 10px;
     border: 1.5px solid rgba(99,102,241,.3); background: rgba(99,102,241,.07);
@@ -117,7 +121,7 @@ const CSS = `
     display: grid; grid-template-columns: repeat(auto-fill, minmax(310px,1fr)); gap: 1.3rem;
   }
 
-  /* ── Booking card ── */
+  /* ── Card ── */
   .pd-card {
     border-radius: 20px; background: rgba(15,23,42,.8);
     border: 1px solid rgba(99,102,241,.14); padding: 1.5rem;
@@ -127,7 +131,6 @@ const CSS = `
   }
   .pd-card:hover { transform: translateY(-5px); }
   .pd-card-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 20px 20px 0 0; }
-
   .pd-card-top { display: flex; gap: .85rem; align-items: center; margin-bottom: 1rem; }
   .pd-card-icon {
     width: 50px; height: 50px; border-radius: 13px; flex-shrink: 0;
@@ -135,12 +138,11 @@ const CSS = `
   }
   .pd-service-name { font-size: 1rem; font-weight: 800; color: #f1f5f9; margin-bottom: 2px; }
   .pd-customer     { font-size: .8rem; color: #94a3b8; font-weight: 500; }
-
-  .pd-divider { height: 1px; background: rgba(99,102,241,.1); margin: .85rem 0; }
-
-  .pd-info-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .4rem; font-size: .83rem; color: #94a3b8; }
+  .pd-divider      { height: 1px; background: rgba(99,102,241,.1); margin: .85rem 0; }
+  .pd-info-row     { display: flex; align-items: center; gap: .5rem; margin-bottom: .4rem; font-size: .83rem; color: #94a3b8; }
   .pd-info-row span { font-weight: 500; }
 
+  /* ── Status badge ── */
   .pd-status-badge {
     display: inline-flex; align-items: center; gap: .35rem;
     padding: .22rem .75rem; border-radius: 100px;
@@ -155,25 +157,65 @@ const CSS = `
     cursor: pointer; position: relative; overflow: hidden;
     box-shadow: 0 4px 20px rgba(16,185,129,.35); transition: transform .25s, box-shadow .25s;
   }
-  .pd-accept-btn::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%;
-    background: linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent); }
+  .pd-accept-btn::after {
+    content:''; position:absolute; top:0; left:-100%; width:60%; height:100%;
+    background: linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  }
   .pd-accept-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(16,185,129,.5); }
   .pd-accept-btn:hover::after { animation: shimmer .65s ease forwards; }
-  .pd-accept-btn:active { transform: translateY(0); }
+  .pd-accept-btn:active  { transform: translateY(0); }
   .pd-accept-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
   /* ── States ── */
-  .pd-state { display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 5rem 2rem; text-align: center; gap: 1rem; grid-column: 1 / -1; }
-  .pd-spinner { width: 44px; height: 44px; border: 3px solid rgba(99,102,241,.2);
-    border-top-color: #6366f1; border-radius: 50%; animation: spin .9s linear infinite; }
+  .pd-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 5rem 2rem; text-align: center; gap: 1rem; grid-column: 1 / -1;
+  }
+  .pd-spinner {
+    width: 44px; height: 44px; border: 3px solid rgba(99,102,241,.2);
+    border-top-color: #6366f1; border-radius: 50%; animation: spin .9s linear infinite;
+  }
+
+  /* ── Filter tabs ── */
+  .pd-filters {
+    display: flex; gap: .55rem; flex-wrap: wrap;
+  }
+  .pd-filter-tab {
+    padding: .38rem 1rem; border-radius: 100px;
+    border: 1.5px solid rgba(99,102,241,.2);
+    background: rgba(99,102,241,.04); color: #94a3b8;
+    font-size: .82rem; font-weight: 600; cursor: pointer;
+    font-family: 'Poppins',sans-serif; transition: all .22s;
+    display: flex; align-items: center; gap: .4rem;
+  }
+  .pd-filter-tab:hover { border-color: rgba(99,102,241,.42); color: #c7d2fe; background: rgba(99,102,241,.1); }
+  .pd-filter-tab.active {
+    border-color: #6366f1; background: rgba(99,102,241,.18);
+    color: #a5b4fc; box-shadow: 0 0 0 3px rgba(99,102,241,.1);
+  }
+  .pd-filter-count {
+    padding: .1rem .45rem; border-radius: 100px;
+    font-size: .7rem; font-weight: 800; min-width: 18px; text-align: center;
+  }
+
+  /* ── Info box (address / note) ── */
+  .pd-info-box {
+    padding: .7rem .85rem; border-radius: 10px;
+    background: rgba(99,102,241,.04); border: 1px solid rgba(99,102,241,.1);
+    margin-bottom: .5rem;
+  }
+  .pd-info-box-label {
+    font-size: .68rem; font-weight: 700; color: #475569;
+    letter-spacing: .05em; text-transform: uppercase; margin-bottom: .22rem;
+  }
+  .pd-info-box-val { font-size: .83rem; color: #cbd5e1; font-weight: 500; line-height: 1.5; }
 
   /* ── Responsive ── */
   @media(max-width:640px) {
-    .pd-stats  { grid-template-columns: 1fr 1fr; gap: .9rem; padding: 1.5rem 1.25rem 0; }
+    .pd-stats   { grid-template-columns: 1fr 1fr; gap: .9rem; padding: 1.5rem 1.25rem 0; }
     .pd-section { padding: 1.5rem 1.25rem 3rem; }
-    .pd-hero   { padding: 2rem 1.25rem 1.5rem; }
-    .pd-nav    { padding: 0 1.25rem; }
+    .pd-hero    { padding: 2rem 1.25rem 1.5rem; }
+    .pd-nav     { padding: 0 1.25rem; }
     .pd-user-chip-label { display: none; }
   }
   @media(max-width:400px) {
@@ -181,7 +223,7 @@ const CSS = `
   }
 `;
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const SERVICE_META = {
   electrician     : { emoji:"⚡", color:"#f59e0b" },
   plumber         : { emoji:"🔧", color:"#3b82f6" },
@@ -191,7 +233,7 @@ const SERVICE_META = {
   painter         : { emoji:"🎨", color:"#f43f5e" },
   default         : { emoji:"🏠", color:"#6366f1" },
 };
-const getMeta = (name = "") => SERVICE_META[(name || "").toLowerCase()] || SERVICE_META.default;
+const getMeta   = (name = "") => SERVICE_META[(name || "").toLowerCase()] || SERVICE_META.default;
 
 const STATUS_STYLE = {
   requested  : { color:"#f59e0b", bg:"rgba(245,158,11,.1)",  border:"rgba(245,158,11,.25)",  dot:"#f59e0b", label:"Requested"   },
@@ -199,17 +241,21 @@ const STATUS_STYLE = {
   inprogress : { color:"#6366f1", bg:"rgba(99,102,241,.1)",  border:"rgba(99,102,241,.25)",  dot:"#6366f1", label:"In Progress" },
   completed  : { color:"#06b6d4", bg:"rgba(6,182,212,.1)",   border:"rgba(6,182,212,.25)",   dot:"#06b6d4", label:"Completed"   },
 };
-const getStatus = (s = "") => STATUS_STYLE[(s || "").toLowerCase().replace(" ","")] || { color:"#94a3b8", bg:"rgba(148,163,184,.1)", border:"rgba(148,163,184,.2)", dot:"#94a3b8", label: s };
+const getStatus = (s = "") =>
+  STATUS_STYLE[(s || "").toLowerCase().replace(" ", "")] ||
+  { color:"#94a3b8", bg:"rgba(148,163,184,.1)", border:"rgba(148,163,184,.2)", dot:"#94a3b8", label: s };
 
-const fmtDate = (d) => d ? new Date(d).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"}) : "No date";
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleString("en-IN", { dateStyle:"medium", timeStyle:"short" }) : "No date";
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ProviderDashboard() {
   const navigate = useNavigate();
 
-  const [bookings,  setBookings]  = useState([]);
-  const [loading,   setLoading]   = useState(true);
-  const [accepting, setAccepting] = useState(null); // bookingId being accepted
+  const [bookings,     setBookings]     = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [accepting,    setAccepting]    = useState(null);
+  const [activeFilter, setActiveFilter] = useState("all");
 
   const user = (() => {
     try { return JSON.parse(localStorage.getItem("user") || "null"); }
@@ -232,7 +278,7 @@ export default function ProviderDashboard() {
     }
   };
 
-  // ── Auth + profile check ────────────────────────────────────────────────
+  // ── Auth + profile check on mount ──────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       if (!token) { navigate("/login"); return; }
@@ -252,9 +298,11 @@ export default function ProviderDashboard() {
   const acceptBooking = async (bookingId) => {
     setAccepting(bookingId);
     try {
-      await axios.patch(`http://localhost:5000/api/booking/accept/${bookingId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.patch(
+        `http://localhost:5000/api/booking/accept/${bookingId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       fetchBookings();
     } catch (err) {
       alert(err.response?.data?.message || "Failed to accept booking");
@@ -263,25 +311,38 @@ export default function ProviderDashboard() {
     }
   };
 
-  // ── Logout ──────────────────────────────────────────────────────────────
+  // ── Logout — clears storage AND fires auth-changed so LandingPage ───────
+  // navbar updates instantly without a reload.
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth-changed")); // ← LandingPage listens to this
     navigate("/login");
   };
 
-  // ── Stats ────────────────────────────────────────────────────────────────
+  // ── Derived stats ─────────────────────────────────────────────────────────
   const total     = bookings.length;
   const pending   = bookings.filter(b => b.status === "requested").length;
   const accepted  = bookings.filter(b => b.status === "accepted").length;
   const completed = bookings.filter(b => b.status === "completed").length;
 
   const STATS = [
-    { icon:"📋", emoji:"📋", num:total,     label:"Total Requests", color:"#6366f1", delay:".05s" },
-    { icon:"⏳", emoji:"⏳", num:pending,   label:"Pending",        color:"#f59e0b", delay:".1s"  },
-    { icon:"✅", emoji:"✅", num:accepted,  label:"Accepted",       color:"#10b981", delay:".15s" },
-    { icon:"🏆", emoji:"🏆", num:completed, label:"Completed",      color:"#06b6d4", delay:".2s"  },
+    { emoji:"📋", num:total,     label:"Total Requests", color:"#6366f1", delay:".05s" },
+    { emoji:"⏳", num:pending,   label:"Pending",        color:"#f59e0b", delay:".1s"  },
+    { emoji:"✅", num:accepted,  label:"Accepted",       color:"#10b981", delay:".15s" },
+    { emoji:"🏆", num:completed, label:"Completed",      color:"#06b6d4", delay:".2s"  },
   ];
+
+  const FILTER_TABS = [
+    { key:"all",       label:"All",       color:"#6366f1", count: total     },
+    { key:"requested", label:"Requested", color:"#f59e0b", count: pending   },
+    { key:"accepted",  label:"Accepted",  color:"#10b981", count: accepted  },
+    { key:"completed", label:"Completed", color:"#06b6d4", count: completed },
+  ];
+
+  const visibleBookings = activeFilter === "all"
+    ? bookings
+    : bookings.filter(b => b.status === activeFilter);
 
   return (
     <>
@@ -302,9 +363,9 @@ export default function ProviderDashboard() {
       {/* ── Hero ── */}
       <div className="pd-hero">
         <div className="pd-hero-grid"/>
-        <div style={{position:"relative",zIndex:1}}>
+        <div style={{ position:"relative", zIndex:1 }}>
           <div className="pd-badge">
-            <span style={{width:"7px",height:"7px",borderRadius:"50%",background:"#10b981",display:"inline-block",animation:"pulse 2s infinite",boxShadow:"0 0 8px #10b98180"}}/>
+            <span style={{ width:"7px", height:"7px", borderRadius:"50%", background:"#10b981", display:"inline-block", animation:"pulse 2s infinite", boxShadow:"0 0 8px #10b98180" }}/>
             LIVE DASHBOARD
           </div>
           <h1>Provider <span>Dashboard</span></h1>
@@ -315,12 +376,14 @@ export default function ProviderDashboard() {
       {/* ── Stats ── */}
       <div className="pd-stats">
         {STATS.map(({ emoji, num, label, color, delay }) => (
-          <div className="pd-stat" key={label} style={{animationDelay:delay,borderColor:`${color}18`}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor=`${color}38`;e.currentTarget.style.boxShadow=`0 12px 36px ${color}14`;}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor=`${color}18`;e.currentTarget.style.boxShadow="none";}}>
-            <div className="pd-stat-icon" style={{background:`${color}15`,border:`1px solid ${color}28`}}>{emoji}</div>
+          <div className="pd-stat" key={label}
+            style={{ animationDelay:delay, borderColor:`${color}18` }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor=`${color}38`; e.currentTarget.style.boxShadow=`0 12px 36px ${color}14`; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor=`${color}18`; e.currentTarget.style.boxShadow="none"; }}
+          >
+            <div className="pd-stat-icon" style={{ background:`${color}15`, border:`1px solid ${color}28` }}>{emoji}</div>
             <div>
-              <div className="pd-stat-num" style={{color}}>{num}</div>
+              <div className="pd-stat-num" style={{ color }}>{num}</div>
               <div className="pd-stat-lbl">{label}</div>
             </div>
           </div>
@@ -332,34 +395,72 @@ export default function ProviderDashboard() {
         <div className="pd-section-head">
           <div>
             <div className="pd-section-title">Incoming Requests</div>
-            {!loading && <div className="pd-section-count">{total} booking{total !== 1 ? "s" : ""} found</div>}
+            {!loading && (
+              <div className="pd-section-count">
+                {visibleBookings.length} booking{visibleBookings.length !== 1 ? "s" : ""}
+                {activeFilter !== "all" ? ` · ${activeFilter}` : ""}
+              </div>
+            )}
           </div>
           <button className="pd-refresh" onClick={fetchBookings}>
-            <span style={{display:"inline-block", animation: loading ? "spin .9s linear infinite" : "none"}}>↻</span>
+            <span style={{ display:"inline-block", animation: loading ? "spin .9s linear infinite" : "none" }}>↻</span>
             Refresh
           </button>
         </div>
 
+        {/* ── Filter tabs ── */}
+        <div className="pd-filters" style={{ marginBottom:"1.5rem" }}>
+          {FILTER_TABS.map(({ key, label, color, count }) => (
+            <button
+              key={key}
+              className={`pd-filter-tab${activeFilter === key ? " active" : ""}`}
+              style={activeFilter === key ? { borderColor:color, background:`${color}18`, color } : {}}
+              onClick={() => setActiveFilter(key)}
+            >
+              {label}
+              <span
+                className="pd-filter-count"
+                style={{
+                  background: activeFilter === key ? `${color}25` : "rgba(99,102,241,.1)",
+                  color: activeFilter === key ? color : "#64748b",
+                }}
+              >{count}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="pd-grid">
+
           {/* Loading */}
           {loading && (
             <div className="pd-state">
               <div className="pd-spinner"/>
-              <p style={{color:"#64748b",fontSize:".95rem"}}>Fetching your bookings…</p>
+              <p style={{ color:"#64748b", fontSize:".95rem" }}>Fetching your bookings…</p>
             </div>
           )}
 
           {/* Empty */}
-          {!loading && bookings.length === 0 && (
+          {!loading && visibleBookings.length === 0 && (
             <div className="pd-state">
-              <div style={{fontSize:"2.8rem"}}>📭</div>
-              <p style={{color:"#f1f5f9",fontWeight:700,fontSize:"1.05rem"}}>No bookings yet</p>
-              <p style={{color:"#64748b",fontSize:".9rem"}}>New requests will appear here when customers book your service.</p>
+              <div style={{ fontSize:"2.8rem" }}>📭</div>
+              <p style={{ color:"#f1f5f9", fontWeight:700, fontSize:"1.05rem" }}>
+                {activeFilter === "all" ? "No bookings yet" : `No ${activeFilter} bookings`}
+              </p>
+              <p style={{ color:"#64748b", fontSize:".9rem" }}>
+                {activeFilter === "all"
+                  ? "New requests will appear here when customers book your service."
+                  : `You don't have any ${activeFilter} bookings right now.`}
+              </p>
+              {activeFilter !== "all" && (
+                <button onClick={() => setActiveFilter("all")} style={{ marginTop:".25rem", padding:".5rem 1.2rem", borderRadius:"10px", border:"1.5px solid rgba(99,102,241,.3)", background:"rgba(99,102,241,.08)", color:"#a5b4fc", fontSize:".84rem", fontWeight:600, cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
+                  View all bookings
+                </button>
+              )}
             </div>
           )}
 
           {/* Cards */}
-          {!loading && bookings.map((booking, i) => {
+          {!loading && visibleBookings.map((booking, i) => {
             const { emoji, color } = getMeta(booking?.serviceId?.name);
             const st = getStatus(booking.status);
 
@@ -367,52 +468,59 @@ export default function ProviderDashboard() {
               <div
                 key={booking._id}
                 className="pd-card"
-                style={{animationDelay:`${i * 0.06}s`, borderColor:`${color}18`}}
-                onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 20px 48px ${color}18`;e.currentTarget.style.borderColor=`${color}38`;}}
-                onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.borderColor=`${color}18`;}}
+                style={{ animationDelay:`${i * 0.06}s`, borderColor:`${color}18` }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow=`0 20px 48px ${color}18`; e.currentTarget.style.borderColor=`${color}38`; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow="none"; e.currentTarget.style.borderColor=`${color}18`; }}
               >
-                {/* Accent top bar */}
-                <div className="pd-card-bar" style={{background:`linear-gradient(90deg,${color},${color}55)`}}/>
+                {/* Accent bar */}
+                <div className="pd-card-bar" style={{ background:`linear-gradient(90deg,${color},${color}55)` }}/>
 
-                {/* Top row */}
+                {/* Top */}
                 <div className="pd-card-top">
-                  <div className="pd-card-icon" style={{background:`${color}15`,border:`1px solid ${color}28`}}>
+                  <div className="pd-card-icon" style={{ background:`${color}15`, border:`1px solid ${color}28` }}>
                     {emoji}
                   </div>
-                  <div style={{flex:1,minWidth:0}}>
+                  <div style={{ flex:1, minWidth:0 }}>
                     <div className="pd-service-name">{booking?.serviceId?.name || "Service"}</div>
                     <div className="pd-customer">👤 {booking?.userId?.name || "Customer"}</div>
                   </div>
-                  {/* Status badge */}
-                  <div className="pd-status-badge" style={{background:st.bg, border:`1px solid ${st.border}`, color:st.color}}>
-                    <span style={{width:"6px",height:"6px",borderRadius:"50%",background:st.dot,display:"inline-block",flexShrink:0}}/>
+                  <div className="pd-status-badge" style={{ background:st.bg, border:`1px solid ${st.border}`, color:st.color }}>
+                    <span style={{ width:"6px", height:"6px", borderRadius:"50%", background:st.dot, display:"inline-block", flexShrink:0 }}/>
                     {st.label}
                   </div>
                 </div>
 
                 <div className="pd-divider"/>
 
-                {/* Info */}
+                {/* Date + payment inline rows */}
                 <div className="pd-info-row">
                   <span>📅</span>
                   <span>{fmtDate(booking?.scheduledTime)}</span>
                 </div>
-                <div className="pd-info-row">
+                <div className="pd-info-row" style={{ marginBottom:".75rem" }}>
                   <span>💳</span>
-                  <span style={{color: booking.paymentStatus === "paid" ? "#10b981" : "#f59e0b", fontWeight:600, textTransform:"capitalize"}}>
+                  <span style={{ color: booking.paymentStatus === "paid" ? "#10b981" : "#f59e0b", fontWeight:600, textTransform:"capitalize" }}>
                     {booking.paymentStatus || "pending"}
                   </span>
                 </div>
-                <div className="pd-info-row">
-                  <span>📍</span>
-                  <span>{booking?.address || "Not provided"}</span>
-                </div>
-                <div className="pd-info-row">
-                  <span>📝</span>
-                  <span>{booking?.note || "No notes"}</span>
+
+                {/* Address box */}
+                <div className="pd-info-box">
+                  <div className="pd-info-box-label">📍 Address</div>
+                  <div className="pd-info-box-val">
+                    {booking?.address || <span style={{color:"#475569",fontStyle:"italic"}}>Not provided</span>}
+                  </div>
                 </div>
 
-                {/* Accept button */}
+                {/* Note box */}
+                <div className="pd-info-box">
+                  <div className="pd-info-box-label">📝 Customer Note</div>
+                  <div className="pd-info-box-val" style={{ color: booking?.note ? "#cbd5e1" : "#475569", fontStyle: booking?.note ? "normal" : "italic" }}>
+                    {booking?.note || "No additional notes"}
+                  </div>
+                </div>
+
+                {/* Accept */}
                 {booking.status === "requested" && (
                   <button
                     className="pd-accept-btn"
@@ -420,8 +528,8 @@ export default function ProviderDashboard() {
                     disabled={accepting === booking._id}
                   >
                     {accepting === booking._id ? (
-                      <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:".5rem"}}>
-                        <span style={{width:"16px",height:"16px",border:"2px solid rgba(255,255,255,.3)",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin .8s linear infinite"}}/>
+                      <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:".5rem" }}>
+                        <span style={{ width:"16px", height:"16px", border:"2px solid rgba(255,255,255,.3)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin .8s linear infinite" }}/>
                         Accepting…
                       </span>
                     ) : "✓ Accept Booking"}
@@ -429,13 +537,13 @@ export default function ProviderDashboard() {
                 )}
 
                 {booking.status === "accepted" && (
-                  <div style={{marginTop:"1rem",padding:".65rem 1rem",borderRadius:"10px",background:"rgba(16,185,129,.07)",border:"1px solid rgba(16,185,129,.22)",fontSize:".82rem",color:"#6ee7b7",fontWeight:600,textAlign:"center"}}>
+                  <div style={{ marginTop:"1rem", padding:".65rem 1rem", borderRadius:"10px", background:"rgba(16,185,129,.07)", border:"1px solid rgba(16,185,129,.22)", fontSize:".82rem", color:"#6ee7b7", fontWeight:600, textAlign:"center" }}>
                     ✅ Booking Accepted — Arrive on time!
                   </div>
                 )}
 
                 {booking.status === "completed" && (
-                  <div style={{marginTop:"1rem",padding:".65rem 1rem",borderRadius:"10px",background:"rgba(6,182,212,.07)",border:"1px solid rgba(6,182,212,.22)",fontSize:".82rem",color:"#67e8f9",fontWeight:600,textAlign:"center"}}>
+                  <div style={{ marginTop:"1rem", padding:".65rem 1rem", borderRadius:"10px", background:"rgba(6,182,212,.07)", border:"1px solid rgba(6,182,212,.22)", fontSize:".82rem", color:"#67e8f9", fontWeight:600, textAlign:"center" }}>
                     🏆 Job Completed
                   </div>
                 )}
