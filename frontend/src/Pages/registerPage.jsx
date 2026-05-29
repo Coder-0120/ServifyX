@@ -21,19 +21,22 @@ const CSS = `
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
     height: 64px; display: flex; align-items: center; justify-content: space-between;
     padding: 0 2rem;
-    background: rgba(10,15,30,.88);
+    background: rgba(15,23,42,.92);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(99,102,241,.15);
-    box-shadow: 0 4px 32px rgba(0,0,0,.4);
+    border-bottom: 1px solid rgba(99,102,241,.18);
+    box-shadow: 0 4px 32px rgba(0,0,0,.35);
+    transition: all .3s ease;
   }
   .rp-logo {
     font-size: 1.5rem; font-weight: 900; letter-spacing: -.03em; cursor: pointer;
     background: linear-gradient(135deg,#6366f1,#06b6d4);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
-  .rp-nav-links { display: flex; gap: 2rem; list-style: none; }
-  .rp-nav-links a { color: #94a3b8; font-size: .875rem; font-weight: 500; cursor: pointer; text-decoration: none; transition: color .2s; }
-  .rp-nav-links a:hover { color: #a5b4fc; }
+  .rp-nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+  .rp-nav-link {
+    color: #94a3b8; font-size: .875rem; font-weight: 500; cursor: pointer; text-decoration: none; transition: color .2s;
+  }
+  .rp-nav-link:hover { color: #a5b4fc; }
   .rp-nav-ghost {
     padding: .4rem 1.1rem; border-radius: 10px; border: 1.5px solid rgba(99,102,241,.4);
     background: transparent; color: #a5b4fc; font-size: .84rem; font-weight: 600;
@@ -47,6 +50,21 @@ const CSS = `
     box-shadow: 0 4px 18px rgba(99,102,241,.4); transition: all .2s;
   }
   .rp-nav-solid:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,.55); }
+  .rp-hamburger {
+    display: none; width: 36px; height: 36px; padding: 7px;
+    border: 1px solid rgba(99,102,241,.3); border-radius: 10px;
+    background: rgba(99,102,241,.08); color: #a5b4fc; cursor: pointer;
+  }
+  .rp-mobile-menu {
+    position: fixed; top: 64px; left: 0; right: 0; z-index: 199;
+    background: rgba(15,23,42,.97); backdrop-filter: blur(20px);
+    padding: 1rem 1.5rem 1.5rem; border-bottom: 1px solid rgba(99,102,241,.15);
+  }
+  .rp-mobile-link {
+    padding: .8rem 0; color: #94a3b8; display: block; cursor: pointer;
+    font-size: 1rem; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,.05); transition: color .2s;
+  }
+  .rp-mobile-link:hover { color: #a5b4fc; }
 
   .rp-select, .rp-input {
     width: 100%; padding: .78rem 1rem .78rem 2.8rem;
@@ -93,6 +111,8 @@ const IconRole    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCo
 const IconEye     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"18px",height:"18px"}}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 const IconEyeOff  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"18px",height:"18px"}}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>;
 const IconChevron = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:"16px",height:"16px"}}><polyline points="6 9 12 15 18 9"/></svg>;
+const IconMenu = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"100%",height:"100%"}}><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
+const IconClose = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"100%",height:"100%"}}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 const IconCheck   = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:"100%",height:"100%"}}><polyline points="20 6 9 17 4 12"/></svg>;
 
 const IcoWrap = ({ children }) => (
@@ -121,6 +141,15 @@ export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const NAV_LINKS = [
+    { label: "Home", action: () => navigate("/") },
+    { label: "Services", action: () => navigate("/services") },
+    { label: "How It Works", action: () => navigate("/") },
+    { label: "Become Provider", action: () => navigate("/register") },
+    { label: "Contact", action: () => navigate("/") },
+  ];
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -206,17 +235,31 @@ export default function RegisterPage() {
 
       {/* ── Navbar ── */}
       <nav className="rp-nav">
-        <div className="rp-logo" onClick={() => navigate("/")}>ServifyX</div>
+        <div className="rp-logo" onClick={() => { navigate("/"); setMenuOpen(false); }}>ServifyX</div>
         <ul className="rp-nav-links">
-          {["Home","Services","How It Works","Become Provider","Contact"].map(l => (
-            <li key={l}><a>{l}</a></li>
+          {NAV_LINKS.map(({ label, action }) => (
+            <li key={label}><span className="rp-nav-link" onClick={() => { action(); setMenuOpen(false); }}>{label}</span></li>
           ))}
         </ul>
-        <div className="rp-nav-auth" style={{ display:"flex", gap:".6rem" }}>
-          <button className="rp-nav-ghost" onClick={() => navigate("/login")}>Login</button>
-          <button className="rp-nav-solid">Sign Up</button>
+        <div className="rp-nav-auth" style={{ display:"flex", gap: ".6rem" }}>
+          <button className="rp-nav-ghost" onClick={() => { navigate("/login"); setMenuOpen(false); }}>Login</button>
+          <button className="rp-nav-solid" onClick={() => { navigate("/register"); setMenuOpen(false); }}>Sign Up</button>
         </div>
+        <button type="button" className="rp-hamburger" onClick={() => setMenuOpen(open => !open)}>
+          {menuOpen ? <IconClose/> : <IconMenu/>}
+        </button>
       </nav>
+      {menuOpen && (
+        <div className="rp-mobile-menu">
+          {NAV_LINKS.map(({ label, action }) => (
+            <span key={label} className="rp-mobile-link" onClick={() => { action(); setMenuOpen(false); }}>{label}</span>
+          ))}
+          <div style={{ display:"flex", gap: ".75rem", marginTop: "1rem" }}>
+            <button onClick={() => { navigate("/login"); setMenuOpen(false); }} style={{ flex:1, padding: ".6rem", borderRadius: "10px", border: "1.5px solid rgba(99,102,241,.4)", background: "transparent", color: "#a5b4fc", fontFamily: "inherit", fontWeight: 600, cursor: "pointer" }}>Login</button>
+            <button onClick={() => { navigate("/register"); setMenuOpen(false); }} style={{ flex:1, padding: ".6rem", borderRadius: "10px", border: "none", background: "linear-gradient(135deg,#6366f1,#06b6d4)", color: "#fff", fontFamily: "inherit", fontWeight: 600, cursor: "pointer" }}>Sign Up</button>
+          </div>
+        </div>
+      )}
 
       {/* ── Page ── */}
       <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"84px 1rem 2rem", background:"radial-gradient(ellipse 90% 55% at 50% 0%, rgba(99,102,241,.16) 0%, transparent 65%), #0f172a" }}>

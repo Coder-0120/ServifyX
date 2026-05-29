@@ -244,16 +244,16 @@ function Navbar() {
           ))}
 
           {/* auth actions in mobile menu */}
-          {user ? (
-            <span className="sp-mobile-link" onClick={() => { handleLogoutNav(); }}>
-              Logout
-            </span>
-          ) : (
-            <>
-              <span className="sp-mobile-link" onClick={() => { navigate("/login"); setMenuOpen(false); }}>Login</span>
-              <span className="sp-mobile-link" onClick={() => { navigate("/register"); setMenuOpen(false); }}>Sign Up</span>
-            </>
-          )}
+          <div style={{ display:"flex", gap:".75rem", marginTop:"1rem" }}>
+            {user ? (
+              <button onClick={() => { handleLogoutNav(); }} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"1.5px solid rgba(239,68,68,.35)", background:"rgba(239,68,68,.07)", color:"#fca5a5", fontFamily:"inherit", fontWeight:600, cursor:"pointer" }}>Logout</button>
+            ) : (
+              <>
+                <button onClick={() => { navigate("/login"); setMenuOpen(false); }} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"1.5px solid rgba(99,102,241,.4)", background:"transparent", color:"#a5b4fc", fontFamily:"inherit", fontWeight:600, cursor:"pointer" }}>Login</button>
+                <button onClick={() => { navigate("/register"); setMenuOpen(false); }} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"none", background:"linear-gradient(135deg,#6366f1,#06b6d4)", color:"#fff", fontFamily:"inherit", fontWeight:600, cursor:"pointer" }}>Sign Up</button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </>

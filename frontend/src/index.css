@@ -1,0 +1,11 @@
+/* Global cursor rules for clickable/navigation elements */
+/* Applies pointer cursor to anchors, buttons and common nav/link/button classes used across pages */
+a, button { cursor: pointer; }
+.nav-link, .sp-nav-link, .sp-mobile-link, .sp-nav-btn, .sp-hamburger, .sp-nav-logout, .sp-nav-solid, .sp-nav-ghost { cursor: pointer; }
+.btn-main, .btn-ghost, .book-btn, .pd-filter-tab, .pd-btn, .pd-card, .fc, .sc, .tc { cursor: pointer; }
+/* Fallback: any element with 'clickable' class or data-clickable attribute */
+.clickable, [data-clickable] { cursor: pointer; }
+
+/* Prefer pointer for anchors even if they are styled as block */
+a { text-decoration: none; }
+
