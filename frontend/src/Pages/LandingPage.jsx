@@ -235,21 +235,7 @@ function Navbar({ user, onLogout }) {
                 </span>
               </div>
 
-              {/* Role-specific quick action */}
-              {role === "provider" ? (
-                <button
-                  className="btn-ghost"
-                  onClick={() => navigate("/provider/dashboard")}
-                  style={{ ...btnBase, border:"1.5px solid rgba(16,185,129,.35)", background:"rgba(16,185,129,.07)", color:"#6ee7b7" }}
-                >Dashboard</button>
-              ) : (
-                <button
-                  className="btn-ghost"
-                  onClick={() => navigate("/track-bookings")}
-                  style={{ ...btnBase, border:"1.5px solid rgba(6,182,212,.35)", background:"rgba(6,182,212,.07)", color:"#67e8f9" }}
-                >My Bookings</button>
-              )}
-
+           
               {/* Logout */}
               <button
                 className="btn-ghost"
@@ -301,11 +287,7 @@ function Navbar({ user, onLogout }) {
           <div style={{ display:"flex", gap:".75rem", marginTop:"1rem" }}>
             {user ? (
               <>
-                {role === "provider" ? (
-                  <button onClick={() => { navigate("/provider/dashboard"); setMenuOpen(false); }} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"1.5px solid rgba(16,185,129,.35)", background:"rgba(16,185,129,.07)", color:"#6ee7b7", fontFamily:"inherit", fontWeight:600, cursor:"pointer" }}>Dashboard</button>
-                ) : (
-                  <button onClick={() => { navigate("/track-bookings"); setMenuOpen(false); }} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"1.5px solid rgba(6,182,212,.35)", background:"rgba(6,182,212,.07)", color:"#67e8f9", fontFamily:"inherit", fontWeight:600, cursor:"pointer" }}>My Bookings</button>
-                )}
+          
                 <button onClick={onLogout} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"1.5px solid rgba(239,68,68,.35)", background:"rgba(239,68,68,.07)", color:"#fca5a5", fontFamily:"inherit", fontWeight:600, cursor:"pointer" }}>Logout</button>
               </>
             ) : (

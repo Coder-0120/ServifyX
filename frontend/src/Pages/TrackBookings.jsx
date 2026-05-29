@@ -89,6 +89,114 @@ const GLOBAL_CSS = `
   .stat-card:hover {
     transform: translateY(-3px);
   }
+
+  /* ════════════════════════════════════
+     NAVBAR
+  ════════════════════════════════════ */
+  .sp-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+    height: 64px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem;
+    background: rgba(15,23,42,.92);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(99,102,241,.18);
+    box-shadow: 0 4px 32px rgba(0,0,0,.35);
+    transition: all .3s ease;
+  }
+  .sp-logo {
+    font-size: 1.5rem; font-weight: 900; letter-spacing: -.03em; cursor: pointer;
+    background: linear-gradient(135deg,#6366f1,#06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    flex-shrink: 0;
+  }
+
+  /* center nav links */
+  .sp-nav-links { display: flex; gap: .35rem; list-style: none; align-items: center; }
+  .sp-nav-link {
+    padding: .42rem 1rem; border-radius: 10px; border: none;
+    background: transparent; color: #94a3b8;
+    font-size: .875rem; font-weight: 500; cursor: pointer;
+    font-family: 'Poppins',sans-serif; transition: all .2s;
+    text-decoration: none; display: block;
+  }
+  .sp-nav-link:hover { color: #a5b4fc; background: rgba(99,102,241,.08); }
+  .sp-nav-link.active { color: #a5b4fc; background: rgba(99,102,241,.1); }
+
+  /* right side */
+  .sp-nav-right { display: flex; align-items: center; gap: .6rem; flex-shrink: 0; }
+
+  /* user chip */
+  .sp-user-chip {
+    display: flex; align-items: center; gap: .45rem;
+    padding: .36rem .9rem; border-radius: 100px;
+    background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.28);
+    color: #c7d2fe; font-size: .84rem; font-weight: 600;
+    white-space: nowrap;
+  }
+  .sp-user-role {
+    font-size: .7rem; padding: .1rem .45rem; border-radius: 6px;
+    background: rgba(99,102,241,.18); color: #818cf8; font-weight: 700;
+  }
+
+  /* nav buttons */
+  .sp-nav-btn {
+    padding: .4rem 1.1rem; border-radius: 10px;
+    font-size: .84rem; font-weight: 600; cursor: pointer;
+    font-family: 'Poppins',sans-serif; transition: all .2s;
+    white-space: nowrap;
+  }
+  .sp-nav-bookings {
+    border: 1.5px solid rgba(6,182,212,.35);
+    background: rgba(6,182,212,.07); color: #67e8f9;
+  }
+  .sp-nav-bookings:hover { background: rgba(6,182,212,.14); border-color: rgba(6,182,212,.55); }
+  .sp-nav-logout {
+    border: 1.5px solid rgba(239,68,68,.35);
+    background: rgba(239,68,68,.07); color: #fca5a5;
+  }
+  .sp-nav-logout:hover { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.55); }
+  .sp-nav-ghost {
+    border: 1.5px solid rgba(99,102,241,.4);
+    background: transparent; color: #a5b4fc;
+  }
+  .sp-nav-ghost:hover { background: rgba(99,102,241,.12); }
+  .sp-nav-solid {
+    border: none;
+    background: linear-gradient(135deg,#6366f1,#06b6d4); color: #fff;
+    box-shadow: 0 4px 18px rgba(99,102,241,.35);
+  }
+  .sp-nav-solid:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,.55); }
+
+  /* hamburger */
+  .sp-hamburger {
+    display: none; width: 36px; height: 36px; padding: 7px;
+    border: 1px solid rgba(99,102,241,.3); border-radius: 10px;
+    background: rgba(99,102,241,.08); color: #a5b4fc; cursor: pointer;
+    align-items: center; justify-content: center;
+  }
+
+  /* mobile drawer */
+  .sp-mobile-menu {
+    position: fixed; top: 64px; left: 0; right: 0; z-index: 299;
+    background: rgba(10,15,30,.97); backdrop-filter: blur(20px);
+    padding: 1rem 1.5rem 1.5rem;
+    border-bottom: 1px solid rgba(99,102,241,.15);
+    animation: fadeDown .25s ease;
+  }
+  .sp-mobile-link {
+    padding: .7rem 0; color: #94a3b8; font-size: 1rem; font-weight: 500;
+    cursor: pointer; border-bottom: 1px solid rgba(255,255,255,.05);
+    transition: color .2s; display: block;
+  }
+  .sp-mobile-link:hover { color: #a5b4fc; }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+
+  @media(max-width:768px) {
+    .sp-nav-links  { display: none !important; }
+    .sp-nav-right  { display: none !important; }
+    .sp-hamburger  { display: flex !important; }
+  }
 `;
 
 // ── Status helpers ────────────────────────────────────────────────────────────
@@ -100,6 +208,91 @@ const STATUS_META = {
   completed:   { color: "#10b981", bg: "rgba(16,185,129,.1)",  border: "rgba(16,185,129,.25)",  icon: "🏆", label: "Completed"   },
   cancelled:   { color: "#ef4444", bg: "rgba(239,68,68,.1)",   border: "rgba(239,68,68,.25)",   icon: "✖️", label: "Cancelled"   },
 };
+
+// ── SVG Icons ────────────────────────────────────────────────────────────────
+const IconMenu  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"100%",height:"100%"}}><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
+const IconClose = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"100%",height:"100%"}}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVBAR
+// ─────────────────────────────────────────────────────────────────────────────
+function Navbar() {
+  const navigate  = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const user = (() => {
+    try { return JSON.parse(localStorage.getItem("user") || "null"); }
+    catch { return null; }
+  })();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth-changed"));
+    navigate("/login");
+    setMenuOpen(false);
+  };
+
+  const NAV_LINKS = [
+    { label:"Home",           action: () => navigate("/")               },
+    { label:"Book a Service", action: () => navigate("/services")       },
+    { label:"Track Bookings", action: () => navigate("/track-bookings") },
+  ];
+
+  return (
+    <>
+      <nav className="sp-nav">
+        {/* Logo */}
+        <div className="sp-logo" onClick={() => navigate("/")}>ServifyX</div>
+
+        {/* Centre links */}
+        <ul className="sp-nav-links">
+          {NAV_LINKS.map(({ label, action }) => (
+            <li key={label}>
+              <span className="sp-nav-link" onClick={action}>{label}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Right — Logout or Login/SignUp */}
+        <div className="sp-nav-right">
+          {user ? (
+            <button className="sp-nav-btn sp-nav-logout" onClick={handleLogout}>Logout</button>
+          ) : (
+            <>
+              <button className="sp-nav-btn sp-nav-ghost"  onClick={() => navigate("/login")}>Login</button>
+              <button className="sp-nav-btn sp-nav-solid"  onClick={() => navigate("/register")}>Sign Up</button>
+            </>
+          )}
+        </div>
+
+        {/* Hamburger */}
+        <button className="sp-hamburger" onClick={() => setMenuOpen(o => !o)}>
+          {menuOpen ? <IconClose/> : <IconMenu/>}
+        </button>
+      </nav>
+
+      {/* Mobile drawer */}
+      {menuOpen && (
+        <div className="sp-mobile-menu">
+          {NAV_LINKS.map(({ label, action }) => (
+            <span key={label} className="sp-mobile-link" onClick={() => { action(); setMenuOpen(false); }}>{label}</span>
+          ))}
+          <div style={{ display:"flex", gap:".75rem", marginTop:"1rem" }}>
+            {user ? (
+              <button onClick={handleLogout} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"1.5px solid rgba(239,68,68,.35)", background:"rgba(239,68,68,.07)", color:"#fca5a5", fontFamily:"'Poppins',sans-serif", fontWeight:600, cursor:"pointer" }}>Logout</button>
+            ) : (
+              <>
+                <button onClick={() => { navigate("/login");    setMenuOpen(false); }} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"1.5px solid rgba(99,102,241,.4)", background:"transparent", color:"#a5b4fc", fontFamily:"'Poppins',sans-serif", fontWeight:600, cursor:"pointer" }}>Login</button>
+                <button onClick={() => { navigate("/register"); setMenuOpen(false); }} style={{ flex:1, padding:".6rem", borderRadius:"10px", border:"none", background:"linear-gradient(135deg,#6366f1,#06b6d4)", color:"#fff", fontFamily:"'Poppins',sans-serif", fontWeight:600, cursor:"pointer" }}>Sign Up</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 const TIMELINE_STEPS = [
   { key: "requested",  label: "Requested",  emoji: "📋" },
@@ -543,50 +736,10 @@ export function TrackBookings() {
         }} />
 
         {/* ── Navbar ── */}
-        <nav style={{
-          position: "sticky", top: 0, zIndex: 50,
-          height: "66px", display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 2rem",
-          backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-          background: "rgba(15,23,42,.88)",
-          borderBottom: "1px solid rgba(99,102,241,.15)",
-          boxShadow: "0 4px 32px rgba(0,0,0,.3)",
-        }}>
-          <div onClick={() => navigate("/")} style={{
-            fontSize: "1.5rem", fontWeight: 900, letterSpacing: "-.03em", cursor: "pointer",
-            background: "linear-gradient(135deg,#6366f1,#06b6d4)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-            userSelect: "none",
-          }}>ServifyX</div>
-
-          <div style={{
-            display: "flex", alignItems: "center", gap: ".55rem",
-            padding: ".32rem 1rem", borderRadius: "100px",
-            background: "rgba(99,102,241,.08)", border: "1px solid rgba(99,102,241,.2)",
-          }}>
-            <span style={{
-              width: "7px", height: "7px", borderRadius: "50%", background: "#10b981",
-              display: "inline-block", animation: "pulse 2s infinite", boxShadow: "0 0 8px #10b98180",
-            }} />
-            <span style={{ color: "#a5b4fc", fontSize: ".8rem", fontWeight: 700, letterSpacing: ".04em" }}>
-              MY BOOKINGS
-            </span>
-          </div>
-
-          <button className="back-btn" onClick={() => navigate("/")} style={{
-            display: "flex", alignItems: "center", gap: ".4rem",
-            padding: ".42rem 1rem", borderRadius: "10px",
-            border: "1.5px solid rgba(99,102,241,.3)",
-            background: "rgba(99,102,241,.06)",
-            color: "#94a3b8", fontSize: ".82rem", fontWeight: 600,
-            cursor: "pointer", fontFamily: "inherit", transition: "all .25s",
-          }}>
-            ← Home
-          </button>
-        </nav>
+        <Navbar/>
 
         {/* ── Content ── */}
-        <div style={{ position: "relative", zIndex: 1, maxWidth: "1200px", margin: "0 auto", padding: "2.5rem 2rem 4rem" }}>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: "1200px", margin: "0 auto", padding: "6rem 2rem 4rem" }}>
 
           {/* Page header */}
           <div style={{ marginBottom: "2.5rem", animation: "fadeUp .6s ease both" }}>

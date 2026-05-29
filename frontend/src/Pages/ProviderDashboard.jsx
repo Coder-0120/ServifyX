@@ -126,6 +126,34 @@ body {
   .pd-nav-label  { display:none; }
 }
 @media(max-width:420px){ .pd-stats-grid { grid-template-columns:1fr !important; } }
+/* ════════════════════════════════════
+   NAVBAR (match TrackProviderBookings)
+════════════════════════════════════ */
+.sp-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  height: 64px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  background: rgba(15,23,42,.92);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(99,102,241,.18);
+  box-shadow: 0 4px 32px rgba(0,0,0,.35);
+  transition: all .3s ease;
+}
+.sp-logo { font-size:1.5rem; font-weight:900; letter-spacing:-.03em; cursor:pointer; background:linear-gradient(135deg,#6366f1,#06b6d4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text }
+.sp-nav-links { display:flex; gap:.35rem; list-style:none; align-items:center }
+.sp-nav-link { padding:.42rem 1rem; border-radius:10px; background:transparent; color:#94a3b8; font-size:.875rem; font-weight:500; cursor:pointer }
+.sp-nav-link:hover { color:#a5b4fc; background:rgba(99,102,241,.08) }
+.sp-nav-link.active { color:#a5b4fc; background:rgba(99,102,241,.1) }
+.sp-nav-right { display:flex; gap:.6rem; align-items:center }
+.sp-nav-btn { padding:.4rem 1.1rem; border-radius:10px }
+.sp-nav-ghost { border:1.5px solid rgba(99,102,241,.4); background:transparent; color:#a5b4fc }
+.sp-nav-solid { border:none; background:linear-gradient(135deg,#6366f1,#06b6d4); color:#fff; box-shadow:0 4px 18px rgba(99,102,241,.35) }
+.sp-nav-logout { border:1.5px solid rgba(239,68,68,.35); background:rgba(239,68,68,.07); color:#fca5a5 }
+.sp-hamburger { display:none; width:36px; height:36px; padding:7px; border:1px solid rgba(99,102,241,.3); border-radius:10px; background:rgba(99,102,241,.08); color:#a5b4fc }
+.sp-mobile-menu { position: fixed; top: 64px; left: 0; right: 0; z-index: 299; background: rgba(10,15,30,.97); backdrop-filter: blur(20px); padding: 1rem 1.5rem 1.5rem; border-bottom: 1px solid rgba(99,102,241,.15); }
+.sp-mobile-link { padding:.7rem 0; color:#94a3b8; display:block }
+
+@media(max-width:768px){ .sp-nav-links{ display:none !important } .sp-nav-right{ display:none !important } .sp-hamburger{ display:flex !important } }
 `;
 
 /* ─── Helpers ──────────────────────────────────────────────────────────────── */
@@ -165,6 +193,72 @@ const BtnSpinner = ({label}) => (
     {label}
   </span>
 );
+
+/* ── Navbar component (copied from TrackProviderBookings) ───────────────────── */
+const IconMenu = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"100%",height:"100%"}}><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
+const IconClose = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:"100%",height:"100%"}}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+
+function Navbar() {
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const user = (() => { try { return JSON.parse(localStorage.getItem("user")||"null"); } catch { return null; } })();
+
+  const handleLogoutNav = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth-changed"));
+    navigate("/login");
+    setMenuOpen(false);
+  };
+
+  const NAV_LINKS = [
+    { label:"Home", action: () => navigate("/") },
+    { label:"Dashboard", action: () => navigate("/provider/dashboard") },
+    { label:"Track Bookings", action: () => navigate("/provider/bookings") },
+  ];
+
+  return (
+    <>
+      <nav className="sp-nav">
+        <div className="sp-logo" onClick={() => navigate("/")}>ServifyX</div>
+        <ul className="sp-nav-links">
+          {NAV_LINKS.map(({label,action})=> (
+            <li key={label}><span className="sp-nav-link" onClick={action}>{label}</span></li>
+          ))}
+        </ul>
+        <div className="sp-nav-right">
+          <button className="sp-nav-btn sp-nav-logout" onClick={handleLogoutNav}>Logout</button>
+          {!user && (
+            <>
+              <button className="sp-nav-btn sp-nav-ghost" onClick={() => navigate("/login")}>Login</button>
+              <button className="sp-nav-btn sp-nav-solid" onClick={() => navigate("/register")}>Sign Up</button>
+            </>
+          )}
+        </div>
+        <button className="sp-hamburger" onClick={() => setMenuOpen(o=>!o)}>{menuOpen ? <IconClose/> : <IconMenu/>}</button>
+      </nav>
+      {menuOpen && (
+        <div className="sp-mobile-menu">
+          {NAV_LINKS.map(({label,action})=> (
+            <span key={label} className="sp-mobile-link" onClick={() => { action(); setMenuOpen(false); }}>{label}</span>
+          ))}
+
+          {/* auth actions in mobile menu */}
+          {user ? (
+            <span className="sp-mobile-link" onClick={() => { handleLogoutNav(); }}>
+              Logout
+            </span>
+          ) : (
+            <>
+              <span className="sp-mobile-link" onClick={() => { navigate("/login"); setMenuOpen(false); }}>Login</span>
+              <span className="sp-mobile-link" onClick={() => { navigate("/register"); setMenuOpen(false); }}>Sign Up</span>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
 
 /* ─── Component ─────────────────────────────────────────────────────────────── */
 export default function ProviderDashboard() {
@@ -286,48 +380,17 @@ export default function ProviderDashboard() {
         {/* top-center bloom */}
         <div style={{position:"fixed",top:0,left:0,right:0,height:"420px",zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse 85% 55% at 50% -8%,rgba(99,102,241,.18) 0%,rgba(6,182,212,.06) 45%,transparent 70%)"}}/>
 
-        {/* ── Navbar — exact match to TrackProviderBookings ── */}
-        <nav style={{
-          position:"sticky", top:0, zIndex:50, height:"66px",
-          display:"flex", alignItems:"center", justifyContent:"space-between",
-          padding:"0 2rem",
-          backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)",
-          background:"rgba(15,23,42,.92)",
-          borderBottom:"1px solid rgba(99,102,241,.15)",
-          boxShadow:"0 4px 32px rgba(0,0,0,.3)",
-        }}>
-          {/* Logo */}
-          <div onClick={()=>navigate("/")} style={{fontSize:"1.5rem",fontWeight:900,letterSpacing:"-.03em",cursor:"pointer",userSelect:"none",background:"linear-gradient(135deg,#6366f1,#06b6d4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
-            ServifyX
-          </div>
-
-          {/* Centre badge */}
-          <div style={{display:"flex",alignItems:"center",gap:".55rem",padding:".32rem 1rem",borderRadius:"100px",background:"rgba(99,102,241,.08)",border:"1px solid rgba(99,102,241,.2)"}}>
-            <span style={{width:"7px",height:"7px",borderRadius:"50%",background:"#10b981",display:"inline-block",animation:"pulse 2s infinite",boxShadow:"0 0 8px rgba(16,185,129,.55)"}}/>
-            <span className="pd-nav-label" style={{color:"#a5b4fc",fontSize:".8rem",fontWeight:700,letterSpacing:".04em"}}>
-              PROVIDER DASHBOARD
-            </span>
-          </div>
-
-          {/* Right: logout */}
-          <button
-            onClick={handleLogout}
-            style={{display:"flex",alignItems:"center",gap:".4rem",padding:".42rem 1rem",borderRadius:"10px",border:"1.5px solid rgba(239,68,68,.3)",background:"rgba(239,68,68,.07)",color:"#fca5a5",fontSize:".82rem",fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .25s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(239,68,68,.16)";e.currentTarget.style.borderColor="rgba(239,68,68,.52)";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="rgba(239,68,68,.07)";e.currentTarget.style.borderColor="rgba(239,68,68,.3)";}}
-          >Logout</button>
-        </nav>
+        {/* ── Navbar (shared) ── */}
+        <Navbar/>
 
         {/* ── Content — same maxWidth/padding as TrackProviderBookings ── */}
-        <div style={{position:"relative",zIndex:1,maxWidth:"1200px",margin:"0 auto",padding:"2.5rem 2rem 4rem"}}>
+        <div style={{position:"relative",zIndex:1,maxWidth:"1200px",margin:"0 auto",padding:"7rem 2rem 4rem"}}>
 
           {/* ── Page heading — pixel-identical to TrackProviderBookings ── */}
           <div style={{marginBottom:"2.5rem",animation:"fadeUp .6s ease both"}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:".5rem",padding:".28rem .95rem",borderRadius:"100px",marginBottom:"1rem",background:"rgba(99,102,241,.1)",border:"1px solid rgba(99,102,241,.28)",color:"#a5b4fc",fontSize:".76rem",fontWeight:700,letterSpacing:".06em"}}>
-              PROVIDER DASHBOARD
-            </div>
+          
 
-            <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",flexWrap:"wrap",gap:"1rem"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"1rem"}}>
               <div>
                 <h1 style={{fontSize:"clamp(1.8rem,4vw,2.8rem)",fontWeight:900,letterSpacing:"-.03em",color:"#f1f5f9",lineHeight:1.1,marginBottom:".5rem"}}>
                   Manage Incoming{" "}
