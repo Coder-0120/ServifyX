@@ -13,16 +13,17 @@ const CSS = `
   @keyframes floatC  { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-16px) rotate(3deg)} }
   @keyframes pulse   { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(.88)} }
   @keyframes fadeUp  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
   @keyframes shimmer { 0%{left:-100%} 100%{left:110%} }
   @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
   @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
   .lp-nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-    height: 64px; display: flex; align-items: center; justify-content: space-between;
+    height: 66px; display: flex; align-items: center; justify-content: space-between;
     padding: 0 2rem;
     background: rgba(15,23,42,.92);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(99,102,241,.18);
     box-shadow: 0 4px 32px rgba(0,0,0,.35);
     transition: all .3s ease;
@@ -56,9 +57,10 @@ const CSS = `
     background: rgba(99,102,241,.08); color: #a5b4fc; cursor: pointer;
   }
   .lp-mobile-menu {
-    position: fixed; top: 64px; left: 0; right: 0; z-index: 199;
-    background: rgba(15,23,42,.97); backdrop-filter: blur(20px);
+    position: fixed; top: 66px; left: 0; right: 0; z-index: 199;
+    background: rgba(15,23,42,.97); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     padding: 1rem 1.5rem 1.5rem; border-bottom: 1px solid rgba(99,102,241,.15);
+    animation: fadeDown .25s ease;
   }
   .lp-mobile-link {
     padding: .8rem 0; color: #94a3b8; display: block; cursor: pointer;
@@ -100,7 +102,8 @@ const CSS = `
   .lp-error { padding:.65rem 1rem; border-radius:10px; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.28); color:#fca5a5; font-size:.84rem; font-weight:500; }
   .lp-label { font-size:.8rem; font-weight:600; color:#94a3b8; display:block; margin-bottom:.5rem; letter-spacing:.04em; text-transform:uppercase; }
 
-  @media(max-width:768px) { .lp-side { display:none !important; } .lp-nav-links { display:none !important; } .lp-nav-auth { display:none !important; } }
+  @media(max-width:900px) { .lp-nav-links { display:none !important; } .lp-nav-auth { display:none !important; } .lp-hamburger { display:flex !important; } }
+  @media(max-width:768px) { .lp-side { display:none !important; } }
   @media(max-width:500px) { .lp-form-area { padding:1.75rem 1.25rem !important; } }
 `;
 
@@ -246,15 +249,15 @@ export default function LoginPage() {
       )}
 
       {/* ── Page ── */}
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "84px 1rem 2rem", background: "radial-gradient(ellipse 90% 55% at 50% 0%, rgba(99,102,241,.16) 0%, transparent 65%), #0f172a" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", paddingTop: "86px", padding: "86px 1rem 2rem", background: "radial-gradient(ellipse 100% 60% at 50% -10%, rgba(99,102,241,.22) 0%, rgba(6,182,212,.08) 35%, transparent 70%), #0f172a" }}>
         <div style={{ display: "flex", maxWidth: "920px", width: "100%", borderRadius: "26px", overflow: "hidden", border: "1px solid rgba(99,102,241,.2)", boxShadow: "0 40px 100px rgba(0,0,0,.65)", minHeight: "540px" }}>
 
           {/* ── Left panel ── */}
           <div className="lp-side" style={{ display: "flex", flex: "0 0 420px" }}>
-            <div style={{ flex: 1, position: "relative", overflow: "hidden", background: "radial-gradient(ellipse 90% 70% at 20% 50%, rgba(99,102,241,.2) 0%, transparent 70%), #080d1a", padding: "3rem 2.5rem", display: "flex", flexDirection: "column", justifyContent: "center", borderRight: "1px solid rgba(99,102,241,.12)" }}>
+            <div style={{ flex: 1, position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #080d1a 100%)", padding: "3rem 2.5rem", display: "flex", flexDirection: "column", justifyContent: "center", borderRight: "1px solid rgba(99,102,241,.14)" }}>
               <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(99,102,241,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.06) 1px,transparent 1px)", backgroundSize: "48px 48px", zIndex: 0 }} />
-              <div style={{ position: "absolute", top: "15%", left: "10%", width: "180px", height: "180px", borderRadius: "50%", background: "radial-gradient(circle,rgba(99,102,241,.12),transparent 70%)", zIndex: 0 }} />
-              <div style={{ position: "absolute", bottom: "20%", right: "5%", width: "140px", height: "140px", borderRadius: "50%", background: "radial-gradient(circle,rgba(6,182,212,.1),transparent 70%)", zIndex: 0 }} />
+              <div style={{ position: "absolute", top: "15%", left: "10%", width: "180px", height: "180px", borderRadius: "50%", background: "radial-gradient(circle,rgba(99,102,241,.14),transparent 70%)", zIndex: 0 }} />
+              <div style={{ position: "absolute", bottom: "20%", right: "5%", width: "140px", height: "140px", borderRadius: "50%", background: "radial-gradient(circle,rgba(6,182,212,.12),transparent 70%)", zIndex: 0 }} />
 
               {[
                 { pos: { top: "7%", right: "6%" }, anim: "floatA", delay: "0s", emoji: "⚡", label: "Electrician nearby", color: "#f59e0b" },

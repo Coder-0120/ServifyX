@@ -90,6 +90,65 @@ const GLOBAL_CSS = `
     transform: translateY(-3px);
   }
 
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  .track-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .track-filter-tab {
+    padding: .45rem .95rem;
+    border-radius: 999px;
+    border: 1.5px solid rgba(99,102,241,.18);
+    background: rgba(99,102,241,.04);
+    color: #94a3b8;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    transition: all .22s;
+  }
+  .track-filter-tab:hover {
+    border-color: rgba(99,102,241,.4);
+    color: #c7d2fe;
+    background: rgba(99,102,241,.09);
+  }
+  .track-filter-tab.active {
+    border-color: #6366f1;
+    background: rgba(99,102,241,.16);
+    color: #a5b4fc;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.1);
+  }
+  .track-filter-count {
+    padding: .08rem .42rem;
+    border-radius: 100px;
+    font-size: .72rem;
+    font-weight: 800;
+    min-width: 18px;
+    text-align: center;
+    background: rgba(255,255,255,.05);
+    color: #cbd5e1;
+  }
+
+  @media(max-width:1100px) {
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media(max-width:640px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: .9rem; }
+  }
+  @media(max-width:420px) {
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+
   /* ════════════════════════════════════
      NAVBAR
   ════════════════════════════════════ */
@@ -201,10 +260,10 @@ const GLOBAL_CSS = `
 
 // ── Status helpers ────────────────────────────────────────────────────────────
 const STATUS_META = {
-  requested:   { color: "#f59e0b", bg: "rgba(245,158,11,.1)",  border: "rgba(245,158,11,.25)",  icon: "🕐", label: "Requested"   },
+  pending:   { color: "#f59e0b", bg: "rgba(245,158,11,.1)",  border: "rgba(245,158,11,.25)",  icon: "🕐", label: "Pending"   },
   accepted:    { color: "#06b6d4", bg: "rgba(6,182,212,.1)",   border: "rgba(6,182,212,.25)",   icon: "✅", label: "Accepted"    },
   inprogress:  { color: "#8b5cf6", bg: "rgba(139,92,246,.1)",  border: "rgba(139,92,246,.25)",  icon: "⚙️", label: "In Progress" },
-  "in-progress":{ color: "#8b5cf6", bg: "rgba(139,92,246,.1)", border: "rgba(139,92,246,.25)", icon: "⚙️", label: "In Progress" },
+  in_progress:{ color: "#8b5cf6", bg: "rgba(139,92,246,.1)", border: "rgba(139,92,246,.25)", icon: "⚙️", label: "In Progress" },
   completed:   { color: "#10b981", bg: "rgba(16,185,129,.1)",  border: "rgba(16,185,129,.25)",  icon: "🏆", label: "Completed"   },
   cancelled:   { color: "#ef4444", bg: "rgba(239,68,68,.1)",   border: "rgba(239,68,68,.25)",   icon: "✖️", label: "Cancelled"   },
 };
@@ -295,13 +354,13 @@ function Navbar() {
 }
 
 const TIMELINE_STEPS = [
-  { key: "requested",  label: "Requested",  emoji: "📋" },
+  { key: "pending",  label: "Pending",  emoji: "📋" },
   { key: "accepted",   label: "Accepted",   emoji: "✅" },
-  { key: "inprogress", label: "In Progress",emoji: "⚙️" },
+  { key: "in_progress", label: "In Progress",emoji: "⚙️" },
   { key: "completed",  label: "Completed",  emoji: "🏆" },
 ];
 
-const STEP_ORDER = ["requested", "accepted", "inprogress", "in-progress", "completed"];
+const STEP_ORDER = ["pending", "accepted", "in_progress", "completed"];
 const getStepIndex = (status) => {
   const idx = STEP_ORDER.indexOf(status);
   // Map in-progress variants to same index
@@ -450,8 +509,8 @@ function CancelButton({ booking, onCancel, cancelling }) {
 
 // ── Booking card ──────────────────────────────────────────────────────────────
 function BookingCard({ booking, index, onCancel, cancelling }) {
-  const status = booking.status || "requested";
-  const meta = STATUS_META[status] || STATUS_META.requested;
+  const status = booking.status || "pending";
+  const meta = STATUS_META[status] || STATUS_META.pending;
   const currentStep = getStepIndex(status);
   const isCancelled = status === "cancelled";
 
@@ -647,11 +706,12 @@ function BookingCard({ booking, index, onCancel, cancelling }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export function TrackBookings() {
-  const [bookings,   setBookings]   = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [cancelling, setCancelling] = useState(null);
+  const [bookings,     setBookings]   = useState([]);
+  const [loading,      setLoading]    = useState(true);
+  const [error,        setError]      = useState(null);
+  const [refreshing,   setRefreshing] = useState(false);
+  const [cancelling,   setCancelling] = useState(null);
+  const [activeFilter, setActiveFilter] = useState("all");
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -694,13 +754,18 @@ export function TrackBookings() {
   useEffect(() => { fetchBookings(); }, []);
 
   // Stats derived from bookings
+  const normalizeStatus = (status = "") => {
+    const key = String(status || "").toLowerCase().replace(/[-\s]/g, "_");
+    return key === "inprogress" ? "in_progress" : key;
+  };
+
   const stats = {
     total:      bookings.length,
-    pending:    bookings.filter(b => b.status === "requested").length,
-    active:     bookings.filter(b => b.status === "accepted").length,
-    inprogress: bookings.filter(b => b.status === "inprogress" || b.status === "in-progress").length,
-    completed:  bookings.filter(b => b.status === "completed").length,
-    cancelled:  bookings.filter(b => b.status === "cancelled").length,
+    pending:    bookings.filter(b => normalizeStatus(b.status) === "pending").length,
+    active:     bookings.filter(b => normalizeStatus(b.status) === "accepted").length,
+    inprogress: bookings.filter(b => normalizeStatus(b.status) === "in_progress").length,
+    completed:  bookings.filter(b => normalizeStatus(b.status) === "completed").length,
+    cancelled:  bookings.filter(b => normalizeStatus(b.status) === "cancelled").length,
   };
 
   const STAT_ITEMS = [
@@ -711,6 +776,19 @@ export function TrackBookings() {
     { label: "Completed",   value: stats.completed,  color: "#10b981", icon: "🏆" },
     { label: "Cancelled",   value: stats.cancelled,  color: "#ef4444", icon: "✖️" },
   ];
+
+  const FILTER_TABS = [
+    { key: "all",         label: "All",         color: "#6366f1", count: stats.total },
+    { key: "pending",     label: "Pending",     color: "#f59e0b", count: stats.pending },
+    { key: "accepted",    label: "Accepted",    color: "#06b6d4", count: stats.active },
+    { key: "in_progress", label: "In Progress", color: "#8b5cf6", count: stats.inprogress },
+    { key: "completed",   label: "Completed",   color: "#10b981", count: stats.completed },
+    { key: "cancelled",   label: "Cancelled",   color: "#ef4444", count: stats.cancelled },
+  ];
+
+  const visibleBookings = activeFilter === "all"
+    ? bookings
+    : bookings.filter((booking) => normalizeStatus(booking.status) === activeFilter);
 
   return (
     <>
@@ -785,12 +863,7 @@ export function TrackBookings() {
 
           {/* ── Stats strip ── */}
           {!loading && !error && bookings.length > 0 && (
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(130px,1fr))",
-              gap: "1rem", marginBottom: "2.5rem",
-              animation: "fadeUp .6s ease .1s both",
-            }}>
+            <div className="stats-grid" style={{ animation: "fadeUp .6s ease .1s both" }}>
               {STAT_ITEMS.map(({ label, value, color, icon }) => (
                 <div key={label} className="stat-card" style={{
                   padding: "1.1rem 1rem", borderRadius: "14px",
@@ -804,6 +877,23 @@ export function TrackBookings() {
                   <div style={{ fontSize: "1.55rem", fontWeight: 900, color, lineHeight: 1, marginBottom: ".2rem" }}>{value}</div>
                   <div style={{ fontSize: ".68rem", color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".05em" }}>{label}</div>
                 </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── Filter tabs ── */}
+          {!loading && !error && bookings.length > 0 && (
+            <div className="track-filters" style={{ animation: "fadeUp .6s ease .08s both" }}>
+              {FILTER_TABS.map(({ key, label, count }) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`track-filter-tab${activeFilter === key ? " active" : ""}`}
+                  onClick={() => setActiveFilter(key)}
+                >
+                  {label}
+                  <span className="track-filter-count">{count}</span>
+                </button>
               ))}
             </div>
           )}
@@ -872,14 +962,29 @@ export function TrackBookings() {
             </div>
           )}
 
-          {/* Cards grid */}
+          {/* Filtered cards grid */}
+          {!loading && !error && bookings.length > 0 && visibleBookings.length === 0 && (
+            <div style={{
+              gridColumn: "1/-1", padding: "2.4rem 1.6rem", borderRadius: "18px",
+              background: "rgba(15,23,42,.85)", border: "1px solid rgba(99,102,241,.12)",
+              textAlign: "center", color: "#94a3b8", marginBottom: "1.5rem",
+            }}>
+              <div style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: ".5rem", color: "#f1f5f9" }}>
+                No bookings match this filter.
+              </div>
+              <div style={{ color: "#64748b" }}>
+                Try selecting a different status or switch back to <strong style={{ color: "#cbd5e1" }}>All</strong>.
+              </div>
+            </div>
+          )}
+
           {!loading && !error && bookings.length > 0 && (
             <div style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))",
               gap: "22px",
             }}>
-              {bookings.map((booking, i) => (
+              {visibleBookings.map((booking, i) => (
                 <BookingCard
                   key={booking._id}
                   booking={booking}

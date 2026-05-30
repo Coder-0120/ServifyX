@@ -13,16 +13,17 @@ const CSS = `
   @keyframes floatC  { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-16px) rotate(3deg)} }
   @keyframes pulse   { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(.88)} }
   @keyframes fadeUp  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
   @keyframes shimmer { 0%{left:-100%} 100%{left:110%} }
   @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
   @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
   .rp-nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-    height: 64px; display: flex; align-items: center; justify-content: space-between;
+    height: 66px; display: flex; align-items: center; justify-content: space-between;
     padding: 0 2rem;
     background: rgba(15,23,42,.92);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(99,102,241,.18);
     box-shadow: 0 4px 32px rgba(0,0,0,.35);
     transition: all .3s ease;
@@ -56,9 +57,10 @@ const CSS = `
     background: rgba(99,102,241,.08); color: #a5b4fc; cursor: pointer;
   }
   .rp-mobile-menu {
-    position: fixed; top: 64px; left: 0; right: 0; z-index: 199;
-    background: rgba(15,23,42,.97); backdrop-filter: blur(20px);
+    position: fixed; top: 66px; left: 0; right: 0; z-index: 199;
+    background: rgba(15,23,42,.97); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     padding: 1rem 1.5rem 1.5rem; border-bottom: 1px solid rgba(99,102,241,.15);
+    animation: fadeDown .25s ease;
   }
   .rp-mobile-link {
     padding: .8rem 0; color: #94a3b8; display: block; cursor: pointer;
@@ -100,7 +102,8 @@ const CSS = `
   .rp-error { padding:.65rem 1rem; border-radius:10px; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.28); color:#fca5a5; font-size:.84rem; font-weight:500; }
   .rp-label { font-size:.8rem; font-weight:600; color:#94a3b8; display:block; margin-bottom:.5rem; letter-spacing:.04em; text-transform:uppercase; }
 
-  @media(max-width:768px) { .rp-side { display:none !important; } .rp-nav-links { display:none !important; } .rp-nav-auth { display:none !important; } }
+  @media(max-width:900px) { .rp-nav-links { display:none !important; } .rp-nav-auth { display:none !important; } .rp-hamburger { display:flex !important; } }
+  @media(max-width:768px) { .rp-side { display:none !important; } }
   @media(max-width:500px) { .rp-form-area { padding:1.75rem 1.25rem !important; } }
 `;
 
@@ -262,15 +265,15 @@ export default function RegisterPage() {
       )}
 
       {/* ── Page ── */}
-      <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"84px 1rem 2rem", background:"radial-gradient(ellipse 90% 55% at 50% 0%, rgba(99,102,241,.16) 0%, transparent 65%), #0f172a" }}>
+      <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", paddingTop:"86px", padding:"86px 1rem 2rem", background:"radial-gradient(ellipse 100% 60% at 50% -10%, rgba(99,102,241,.22) 0%, rgba(6,182,212,.08) 35%, transparent 70%), #0f172a" }}>
         <div style={{ display:"flex", maxWidth:"920px", width:"100%", borderRadius:"26px", overflow:"hidden", border:"1px solid rgba(99,102,241,.2)", boxShadow:"0 40px 100px rgba(0,0,0,.65)", minHeight:"600px" }}>
 
           {/* ── Left panel ── */}
           <div className="rp-side" style={{ display:"flex", flex:"0 0 420px" }}>
-            <div style={{ flex:1, position:"relative", overflow:"hidden", background:"radial-gradient(ellipse 90% 70% at 20% 50%, rgba(139,92,246,.18) 0%, transparent 70%), #080d1a", padding:"3rem 2.5rem", display:"flex", flexDirection:"column", justifyContent:"center", borderRight:"1px solid rgba(139,92,246,.12)" }}>
-              <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(139,92,246,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.06) 1px,transparent 1px)", backgroundSize:"48px 48px", zIndex:0 }}/>
-              <div style={{ position:"absolute", top:"10%", left:"5%", width:"200px", height:"200px", borderRadius:"50%", background:"radial-gradient(circle,rgba(139,92,246,.12),transparent 70%)", zIndex:0 }}/>
-              <div style={{ position:"absolute", bottom:"15%", right:"0%", width:"160px", height:"160px", borderRadius:"50%", background:"radial-gradient(circle,rgba(99,102,241,.1),transparent 70%)", zIndex:0 }}/>
+            <div style={{ flex:1, position:"relative", overflow:"hidden", background:"linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #080d1a 100%)", padding:"3rem 2.5rem", display:"flex", flexDirection:"column", justifyContent:"center", borderRight:"1px solid rgba(99,102,241,.14)" }}>
+              <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(99,102,241,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.06) 1px,transparent 1px)", backgroundSize:"48px 48px", zIndex:0 }}/>
+              <div style={{ position:"absolute", top:"10%", left:"5%", width:"200px", height:"200px", borderRadius:"50%", background:"radial-gradient(circle,rgba(99,102,241,.14),transparent 70%)", zIndex:0 }}/>
+              <div style={{ position:"absolute", bottom:"15%", right:"0%", width:"160px", height:"160px", borderRadius:"50%", background:"radial-gradient(circle,rgba(6,182,212,.12),transparent 70%)", zIndex:0 }}/>
 
               {[
                 { pos:{top:"7%", right:"6%"},  anim:"floatA", delay:"0s",   emoji:"🚀", label:"Join for free",      color:"#8b5cf6" },
@@ -281,10 +284,10 @@ export default function RegisterPage() {
               ))}
 
               <div style={{ position:"relative", zIndex:1 }}>
-                <div style={{ fontSize:"1.75rem", fontWeight:900, letterSpacing:"-.03em", background:"linear-gradient(135deg,#6366f1,#8b5cf6)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:"2.5rem" }}>ServifyX</div>
-                <div style={{ padding:"1.6rem", borderRadius:"20px", background:"rgba(10,16,32,.8)", border:"1px solid rgba(139,92,246,.28)", backdropFilter:"blur(24px)", boxShadow:"0 20px 60px rgba(0,0,0,.6)", marginBottom:"2rem" }}>
+                <div style={{ fontSize:"1.75rem", fontWeight:900, letterSpacing:"-.03em", background:"linear-gradient(135deg,#6366f1,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:"2.5rem" }}>ServifyX</div>
+                <div style={{ padding:"1.6rem", borderRadius:"20px", background:"rgba(10,16,32,.8)", border:"1px solid rgba(99,102,241,.28)", backdropFilter:"blur(24px)", boxShadow:"0 20px 60px rgba(0,0,0,.6)", marginBottom:"2rem" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:".75rem", marginBottom:"1.2rem" }}>
-                    <div style={{ width:"42px", height:"42px", borderRadius:"12px", flexShrink:0, background:"linear-gradient(135deg,#6366f1,#8b5cf6)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.2rem", boxShadow:"0 4px 16px rgba(139,92,246,.4)" }}>🎉</div>
+                    <div style={{ width:"42px", height:"42px", borderRadius:"12px", flexShrink:0, background:"linear-gradient(135deg,#6366f1,#06b6d4)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.2rem", boxShadow:"0 4px 16px rgba(99,102,241,.4)" }}>🎉</div>
                     <div>
                       <div style={{ fontSize:".92rem", fontWeight:700, color:"#f1f5f9" }}>Join ServifyX</div>
                       <div style={{ fontSize:".72rem", color:"#64748b" }}>Create your free account</div>
@@ -299,8 +302,8 @@ export default function RegisterPage() {
                 </div>
 
                 {form.role === "provider" ? (
-                  <div style={{ padding:".9rem 1rem", borderRadius:"14px", background:"rgba(139,92,246,.08)", border:"1px solid rgba(139,92,246,.25)", animation:"fadeUp .4s ease both" }}>
-                    <div style={{ fontSize:".78rem", color:"#c4b5fd", fontWeight:700, marginBottom:".6rem" }}>🔧 Provider Benefits</div>
+                  <div style={{ padding:".9rem 1rem", borderRadius:"14px", background:"rgba(99,102,241,.08)", border:"1px solid rgba(99,102,241,.25)", animation:"fadeUp .4s ease both" }}>
+                    <div style={{ fontSize:".78rem", color:"#a5b4fc", fontWeight:700, marginBottom:".6rem" }}>🔧 Provider Benefits</div>
                     {["Live job alerts via Socket.IO","Set your own schedule & rates","10,000+ active customers"].map(t => (
                       <div key={t} style={{ display:"flex", alignItems:"center", gap:".5rem", marginBottom:".32rem" }}>
                         <div style={{ width:"14px", height:"14px", color:"#10b981", flexShrink:0 }}><IconCheck/></div>
@@ -312,7 +315,7 @@ export default function RegisterPage() {
                   <div style={{ display:"flex", gap:"1.75rem" }}>
                     {[["10K+","Bookings"],["2K+","Providers"],["98%","Satisfaction"]].map(([n, l]) => (
                       <div key={l}>
-                        <div style={{ fontSize:"1.25rem", fontWeight:800, background:"linear-gradient(135deg,#c4b5fd,#67e8f9)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>{n}</div>
+                        <div style={{ fontSize:"1.25rem", fontWeight:800, background:"linear-gradient(135deg,#a5b4fc,#67e8f9)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>{n}</div>
                         <div style={{ fontSize:".7rem", color:"#64748b", fontWeight:500 }}>{l}</div>
                       </div>
                     ))}
@@ -334,7 +337,7 @@ export default function RegisterPage() {
 
               <h1 style={{ fontSize:"clamp(1.7rem,3.5vw,2.3rem)", fontWeight:900, letterSpacing:"-.03em", color:"#f1f5f9", lineHeight:1.1, marginBottom:".6rem" }}>
                 Create your{" "}
-                <span style={{ background:"linear-gradient(135deg,#6366f1,#8b5cf6)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>ServifyX</span>
+                <span style={{ background:"linear-gradient(135deg,#6366f1,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>ServifyX</span>
                 {" "}account
               </h1>
               <p style={{ fontSize:".92rem", color:"#64748b", lineHeight:1.65, marginBottom:"2rem" }}>Join 10,000+ homeowners and 2,000+ verified providers.</p>

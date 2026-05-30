@@ -214,7 +214,7 @@ const getMyBookings = async (req, res) => {
         userId: req.user._id,
       })
         .populate("providerId", "name email")
-        .populate("serviceId");
+        .populate("serviceId").sort({ createdAt: -1 });
     }
 
     res.status(200).json(bookings);
