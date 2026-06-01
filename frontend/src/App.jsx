@@ -8,10 +8,12 @@ import ProviderDashboard from './Pages/ProviderDashboard'
 import CreateProviderProfile from './Pages/CreateProviderProfile'
 import TrackBookings from './Pages/TrackBookings'
 import ProviderBookings from './Pages/TrackProviderBookings'
+import ChatButton from './components/ChatButton'
 const App = () => {
   return (
     <>
       <Router>
+        <ChatButton />
         <Routes>
 
           <Route path="/" element={<LandingPage />} />
