@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import socket from "../socket";
 
 // ── CSS: exact theme from LandingPage GLOBAL_CSS ──────────────────────────────
 const GLOBAL_CSS = `
@@ -440,11 +441,24 @@ function TrackProviderBookings() {
   const navigate = useNavigate();
   const token    = localStorage.getItem("token");
 
-  const fetchBookings = async (isRefresh=false) => {
+ const fetchBookings = async (isRefresh=false) => {
     if(!token) return;
     if(isRefresh) setRefreshing(true); else setLoading(true);
     setError(null);
     try {
+      // ── Fetch serviceType and save to localStorage for socket room ──
+      if (!localStorage.getItem("serviceType")) {
+        try {
+          const { data: profile } = await axios.get("http://localhost:5000/api/provider/my-profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (profile?.serviceType) {
+            localStorage.setItem("serviceType", profile.serviceType);
+          }
+        } catch (_) { /* profile not found, skip */ }
+      }
+      // ────────────────────────────────────────────────────────────────
+
       const { data } = await axios.get("http://localhost:5000/api/booking/my-bookings",{
         headers:{ Authorization:`Bearer ${token}` },
       });
@@ -462,6 +476,47 @@ function TrackProviderBookings() {
     if(!token){ navigate("/login"); return; }
     fetchBookings();
   },[token,navigate]);
+
+  // ── Socket.io: receive new bookings + status changes in real-time ─────────
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!user?._id) return;
+
+  socket.connect();
+  socket.emit("join_room", user._id);
+
+  const serviceType = localStorage.getItem("serviceType");
+  if (serviceType) {
+    socket.emit("join_service_room", serviceType.toLowerCase()); // ← lowercase fix
+  }
+
+  socket.on("new_booking", ({ booking }) => {
+    setBookings((prev) => {
+      if (prev.find((b) => b._id === booking._id)) return prev;
+      return [booking, ...prev];
+    });
+  });
+
+  socket.on("booking_accepted_by_other", ({ bookingId }) => {
+    setBookings((prev) =>
+      prev.filter((b) => !(b._id === bookingId && b.status === "requested"))
+    );
+  });
+
+  socket.on("booking_status_changed", ({ booking }) => {
+    setBookings((prev) =>
+      prev.map((b) => (b._id === booking._id ? booking : b))
+    );
+  });
+
+  return () => {
+    socket.off("new_booking");
+    socket.off("booking_accepted_by_other");
+    socket.off("booking_status_changed");
+    socket.disconnect();
+  };
+}, []);
+// ─────────────────────────────────────────────────────────────────────────
 
   const stats = {
     total:      bookings.length,

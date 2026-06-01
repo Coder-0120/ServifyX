@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import socket from "../socket";
 
 // ── Global CSS ────────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
@@ -752,6 +753,28 @@ export function TrackBookings() {
   };
 
   useEffect(() => { fetchBookings(); }, []);
+  // ── Socket.io: real-time booking status updates ──────────────────────────
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!user?._id) return;
+
+  // Connect and join personal room
+  socket.connect();
+  socket.emit("join_room", user._id);
+
+  // When booking status changes, update it in local state
+  socket.on("booking_status_changed", ({ booking }) => {
+    setBookings((prev) =>
+      prev.map((b) => (b._id === booking._id ? booking : b))
+    );
+  });
+
+  return () => {
+    socket.off("booking_status_changed");
+    socket.disconnect();
+  };
+}, []);
+// ─────────────────────────────────────────────────────────────────────────
 
   // Stats derived from bookings
   const normalizeStatus = (status = "") => {

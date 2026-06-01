@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import socket from "../socket";
 
 /* ─── Shared CSS — identical keyframes + utility classes to TrackProviderBookings ── */
 const CSS = `
@@ -269,6 +270,7 @@ export default function ProviderDashboard() {
   const [accepting,    setAccepting]    = useState(null);
   const [updating,     setUpdating]     = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [serviceType, setServiceType] = useState(null);
 
   const user = (() => {
     try { return JSON.parse(localStorage.getItem("user")||"null"); } catch { return null; }
@@ -292,14 +294,59 @@ export default function ProviderDashboard() {
     const init = async () => {
       if(!token){ navigate("/login"); return; }
       try {
-        await axios.get("http://localhost:5000/api/provider/my-profile",{
-          headers:{ Authorization:`Bearer ${token}` },
-        });
-        fetchBookings();
-      } catch { navigate("/create-provider-profile"); }
+    const { data: profile } = await axios.get("http://localhost:5000/api/provider/my-profile",{
+      headers:{ Authorization:`Bearer ${token}` },
+    });
+    // ── Save serviceType for socket room ──
+    if (profile?.serviceType) {
+      localStorage.setItem("serviceType", profile.serviceType);
+      setServiceType(profile.serviceType);
+    }
+    // ─────────────────────────────────────
+    fetchBookings();
+  } catch { navigate("/create-provider-profile"); }
     };
     init();
   },[]);
+// ── Socket.io: real-time dashboard updates ───────────────────────────────
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!user?._id) return;
+
+  // connect once (no-op if already connected)
+  if (!socket.connected) socket.connect();
+  socket.emit("join_room", user._id);
+
+  // join service room when serviceType becomes available
+  if (serviceType) {
+    socket.emit("join_service_room", serviceType.toLowerCase());
+  }
+
+  socket.on("new_booking", ({ booking }) => {
+    setBookings((prev) => {
+      if (prev.find((b) => b._id === booking._id)) return prev;
+      return [booking, ...prev];
+    });
+  });
+
+  socket.on("booking_accepted_by_other", ({ bookingId }) => {
+    setBookings((prev) =>
+      prev.filter((b) => !(b._id === bookingId && b.status === "requested"))
+    );
+  });
+
+  socket.on("booking_status_changed", ({ booking }) => {
+    setBookings((prev) => prev.map((b) => (b._id === booking._id ? booking : b)));
+  });
+
+  return () => {
+    socket.off("new_booking");
+    socket.off("booking_accepted_by_other");
+    socket.off("booking_status_changed");
+    socket.disconnect();
+  };
+}, [serviceType]);
+// ──────────────────────────────────────────────────────────────────────────
 
   /* accept */
   const acceptBooking = async (id) => {
