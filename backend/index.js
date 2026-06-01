@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const providerRoutes = require("./routes/providerRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
+const assistantRoutes = require("./routes/assistantRoutes");
 const cors = require("cors");
 const { initSocket } = require("./socket"); // ← NEW
 
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/service", serviceRoutes);
+app.use("/api/assistant", assistantRoutes);
 
 // Initialize socket AFTER app setup
 initSocket(server); // ← NEW
